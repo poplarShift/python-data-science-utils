@@ -227,7 +227,7 @@ Compositor.register(Compositor("Regression", regression, None,
 # ---------------------------------
 
 import holoviews.operation.datashader as hd
-import datashader as sh
+import datashader as dsh
 
 # import numpy as np, datashader as sh, xarray as xr
 # from datashader import transfer_functions as tf
@@ -251,6 +251,6 @@ def agg_vdims(elements, vdims=None, N=100):
         else:
             vdim = vdims[k]
         agg.append(hd.aggregate(e, dynamic=False, height=N, width=N,
-                    aggregator=sh.mean(column=e.vdims[0].name)
+                    aggregator=dsh.mean(column=e.vdims[0].name)
                    ).data[vdim].to_dataframe())
     return agg

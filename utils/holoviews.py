@@ -3,8 +3,10 @@ import pandas as pd
 import numpy as np
 import param
 
-from holoviews.plotting.bokeh.chart import line_properties, fill_properties
 
+### SEGMENTS element
+
+from holoviews.plotting.bokeh.chart import line_properties, fill_properties
 from holoviews.plotting.bokeh.element import ColorbarPlot
 from holoviews.element.geom import Geometry
 from holoviews import Store, Dimension
@@ -80,6 +82,8 @@ hv.Store.set_current_backend('bokeh')
 # works too:
 # options = Store.options(backend='bokeh')
 # options.Segments = hv.Options('style')
+
+### BIN AVERAGE
 
 import param
 class bin_average(hv.Operation):
@@ -177,6 +181,7 @@ class pimped_bin_average(hv.Operation):
             # return element.clone(errors, new_type=hv.ErrorBars)
             return hv.ErrorBars(errors, x_dim, [y_dim, 'yerror'])
 
+### REGRESSION element
 from holoviews.core import Store
 from holoviews.core.options import Compositor
 from holoviews.operation import gridmatrix
@@ -203,7 +208,6 @@ class regression(hv.Operation):
 
 
 from holoviews.plotting.bokeh import CurvePlot
-
 
 #unsure if necessary?
 class Regression(hv.Curve):
@@ -240,17 +244,26 @@ def agg_vdims(elements, vdims=None, N=100):
     Parameters:
     -----------
     elements : list
-        List of either holoviews Elements, or a list of tuples, where the second entry specifies the vdim to be aggregated.
+        List of holoviews Elements
+    vdims : list
+        List of vdim names over which to aggregate for each Element
     N : int
-        Number of horizontal/vertical bins to aggegrate
+        Number of bins (in each kdim) to aggegrate
     """
-    agg = []
+    data = []
+    kdims0 = [kd.name for kd in elements[0].kdims]
     for k, e in enumerate(elements):
         if vdims is None:
             vdim = e.vdims[0].name
         else:
             vdim = vdims[k]
-        agg.append(hd.aggregate(e, dynamic=False, height=N, width=N,
-                    aggregator=dsh.mean(column=e.vdims[0].name)
-                   ).data[vdim].to_dataframe())
-    return agg
+        kdims = [kd.name for kd in e.kdims]
+        dims = [d.name for d in e.dimensions()]
+        data.append(
+            e.data[dims].rename(columns={kd: kd0 for kd, kd0 in zip(kdims, kdims0)}).copy()
+        )
+
+    df = pd.concat(data, sort=False).dropna(how='all')
+    for kd in kdims0:
+        df[kd] = pd.IntervalIndex(pd.cut(df[kd], bins=N)).mid
+    return df.groupby(kdims0).mean()

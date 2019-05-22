@@ -1,8 +1,14 @@
+from .switch_backend import *
+
+
 import holoviews as hv
 import pandas as pd
 import numpy as np
 import param
 
+def get_kdim_legend(layout, kdim_opts, hw={'width':150, 'height': 250},
+                    defaults={'color': 'k', 'line_width':7, 'alpha':1, 'size':6}):
+    raise NotImplementedError('copy over from notebook')
 
 ### SEGMENTS element
 

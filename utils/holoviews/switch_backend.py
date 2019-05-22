@@ -1,4 +1,22 @@
-from holoviews import Options
+from holoviews import Options, dim
+
+def bokeh2mpl_markers(m):
+    transl = {
+        'cross': 'x',
+        'square': 's',
+        'diamond': 'd',
+        'triangle': '<',
+        'circle': 'o',
+        'asterisk': '*'
+        }
+    if isinstance(m, str):
+        return transl[m]
+    elif isinstance(m, dim):
+        kw = m.ops[0]['kwargs']
+        kw_new = {k: {kk: bokeh2mpl_markers(vv) for kk, vv in v.items()}
+                  for k, v in kw.items() if isinstance(v, dict)}
+        m.ops[0]['kwargs'] = kw_new
+        return m
 
 bokeh2mpl = {
     'force': {
@@ -7,14 +25,39 @@ bokeh2mpl = {
     'all': {
         'height': None,
         'width': None,
+        'shared_axes': None,
+        'shared_datasource': None
     },
     'Scatter': {
         'size': 's',
         'color': 'c',
-        'line_width': 'markeredgewidth'
+        'line_width': 'linewidth',
+        'fill_color': 'facecolors',
+        'marker': ('marker', bokeh2mpl_markers),
     },
-    'Points': {'line_color': 'edgecolor'},
+    'Points': {
+        'line_color': 'edgecolor',
+    },
+    'VLine': {
+        'line_color': 'linecolor',
+        'line_width': 'linewidth',
+    }
 }
+
+def set_new_kwargs(k, new_value_or_fn, old_value):
+    if callable(new_value_or_fn):
+        k_new, v_new = k, new_value_or_fn(old_value)
+    else:
+        k_new, v_new = k, new_value_or_fn
+    return k_new, v_new
+            #
+            # if callable(new_value_or_fn):
+            #     print(k, v)
+            #     k_new, v_new = translate_to[0], new_value_or_fn(v)
+            # else:
+            #     k_new, v_new = translate_to[0], new_value_or_fn
+
+
 
 def parse_translation(lookup, k, v):
     """
@@ -41,17 +84,10 @@ def parse_translation(lookup, k, v):
     elif isinstance(translate_to, tuple):
         # translate kwarg, set new value
         new_value_or_fn = translate_to[1]
-        if callable(new_value_or_fn):
-            k_new, v_new = translate_to[0], new_value_or_fn(v)
-        else:
-            k_new, v_new = translate_to[0], new_value_or_fn
+        k_new, v_new = set_new_kwargs(translate_to[0], translate_to[1], v)
     else:
         # keep old key, translate only value
-        new_value_or_fn = translate_to
-        if callable(new_value_or_fn):
-            k_new, v_new = k, new_value_or_fn(v)
-        else:
-            k_new, v_new = k, new_value_or_fn
+        k_new, v_new = set_new_kwargs(k, translate_to, v)
     return k_new, v_new
 
 def update(name, kwargs, lookup, force={}):
@@ -104,11 +140,15 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
     """
     options_new = []
     for o in options:
-        kwargs_new = update(o.key,
+        name_full = o.key
+        name = name_full.split('.')[0]
+        kwargs_new = update(name,
                             o.kwargs,
-                            {**dictionaries['all'], **dictionaries[o.key]},
+                            {**dictionaries['all'],
+                             **dictionaries.get(name, {})
+                            },
                             force={**dictionaries['force'],
-                                   **override.get(o.key, {})}
+                                   **override.get(name, {})}
                            )
         o_new = Options(o.key, **kwargs_new)
         options_new.append(o_new)

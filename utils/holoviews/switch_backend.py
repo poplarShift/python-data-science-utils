@@ -47,15 +47,14 @@ bokeh2mpl = {
     }
 }
 
-def set_new_kwargs(k, new_value_or_fn, old_value):
+def set_new_value(new_value_or_fn, old_value):
     """
-
+    Either replace or transform the old value using the new value or function.
     """
     if callable(new_value_or_fn):
-        k_new, v_new = k, new_value_or_fn(old_value)
+        return new_value_or_fn(old_value)
     else:
-        k_new, v_new = k, new_value_or_fn
-    return k_new, v_new
+        return new_value_or_fn
 
 
 def parse_translation(lookup, k, v):
@@ -86,10 +85,10 @@ def parse_translation(lookup, k, v):
         and isinstance(translate_to[0], str)
         ):
         # translate kwarg, set new value
-        k_new, v_new = set_new_kwargs(translate_to[0], translate_to[1], v)
+        k_new, v_new = translate_to[0], set_new_value(translate_to[1], v)
     else:
         # keep old key, translate only value
-        k_new, v_new = set_new_kwargs(k, translate_to, v)
+        k_new, v_new = k, set_new_value(translate_to, v)
     return k_new, v_new
 
 def update(name, kwargs, lookup, force={}):

@@ -1,3 +1,4 @@
+from copy import deepcopy
 from holoviews import Options, dim
 
 def bokeh2mpl_markers(m):
@@ -12,11 +13,13 @@ def bokeh2mpl_markers(m):
     if isinstance(m, str):
         return transl[m]
     elif isinstance(m, dim):
-        kw = m.ops[0]['kwargs']
+        d = deepcopy(m)
+        kw = d.ops[0]['kwargs']
         kw_new = {k: {kk: bokeh2mpl_markers(vv) for kk, vv in v.items()}
-                  for k, v in kw.items() if isinstance(v, dict)}
-        m.ops[0]['kwargs'] = kw_new
-        return m
+            if isinstance(v, dict) else bokeh2mpl_markers(v)
+            for k, v in kw.items() }
+        d.ops[0]['kwargs'] = kw_new
+        return d
 
 bokeh2mpl = {
     'force': {

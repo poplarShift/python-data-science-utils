@@ -17,7 +17,7 @@ def bokeh2mpl_markers(m):
         kw = d.ops[0]['kwargs']
         kw_new = {k: {kk: bokeh2mpl_markers(vv) for kk, vv in v.items()}
             if isinstance(v, dict) else bokeh2mpl_markers(v)
-            for k, v in kw.items() }
+            for k, v in kw.items()}
         d.ops[0]['kwargs'] = kw_new
         return d
 
@@ -31,7 +31,7 @@ bokeh2mpl = {
         'shared_axes': None,
         'shared_datasource': None
     },
-    'Scatter': {
+    'Scatter,Points': {
         'size': 's',
         'color': 'c',
         'line_width': 'linewidth',
@@ -48,18 +48,14 @@ bokeh2mpl = {
 }
 
 def set_new_kwargs(k, new_value_or_fn, old_value):
+    """
+
+    """
     if callable(new_value_or_fn):
         k_new, v_new = k, new_value_or_fn(old_value)
     else:
         k_new, v_new = k, new_value_or_fn
     return k_new, v_new
-            #
-            # if callable(new_value_or_fn):
-            #     print(k, v)
-            #     k_new, v_new = translate_to[0], new_value_or_fn(v)
-            # else:
-            #     k_new, v_new = translate_to[0], new_value_or_fn
-
 
 
 def parse_translation(lookup, k, v):
@@ -84,9 +80,12 @@ def parse_translation(lookup, k, v):
     elif isinstance(translate_to, str):
         # translate kwarg, keep value
         k_new, v_new = translate_to, v
-    elif isinstance(translate_to, tuple):
+    elif (
+        isinstance(translate_to, tuple)
+        and len(translate_to)==2
+        and isinstance(translate_to[0], str)
+        ):
         # translate kwarg, set new value
-        new_value_or_fn = translate_to[1]
         k_new, v_new = set_new_kwargs(translate_to[0], translate_to[1], v)
     else:
         # keep old key, translate only value
@@ -124,6 +123,18 @@ def update(name, kwargs, lookup, force={}):
             updates[k_new] = v_new
     return updates
 
+def extract_if_key_is_substr(d, name):
+    """
+    Parameters
+    ----------
+    d: dict
+        where keys can be of the form 'name1,name2,...'
+    name: str
+        name to match
+    """
+    return dict(kv for k, v in d.items() if name in k.split(',')
+                for kv in v.items())
+
 def translate_options(options, dictionaries=bokeh2mpl, override={}):
     """
     Translate a list of holoviews options using a given appropriate dictionaries.
@@ -145,13 +156,15 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
     for o in options:
         name_full = o.key
         name = name_full.split('.')[0]
+        # presets forced on some options across all Element types:
+        force1 = dictionaries['force']
+        force2 = extract_if_key_is_substr(override, name)
         kwargs_new = update(name,
                             o.kwargs,
                             {**dictionaries['all'],
-                             **dictionaries.get(name, {})
+                             **extract_if_key_is_substr(dictionaries, name)
                             },
-                            force={**dictionaries['force'],
-                                   **override.get(name, {})}
+                            force={**force1, **force2}
                            )
         o_new = Options(o.key, **kwargs_new)
         options_new.append(o_new)

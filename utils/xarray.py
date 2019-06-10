@@ -9,6 +9,10 @@ def get_unique(x, axis=0):
     Raises
     ------
     ValueError: if there are more than one non-nan values
+
+    Usage
+    -----
+    ds.reduce(get_unique, dim=some_dim)
     """
     is_dt = np.issubdtype(x.dtype, np.datetime64)
     x_ = np.moveaxis(x, source=axis, destination=-1)

@@ -18,6 +18,9 @@ def get_unique(x, axis=0):
     x_ = np.moveaxis(x, source=axis, destination=-1)
     iteridx = x_.shape[:-1]
     u = np.zeros(iteridx, dtype=x.dtype) if is_dt else np.nan*np.zeros(iteridx)
+    if not isinstance(u, np.ndarray):
+        # if iteridx was empty tuple
+        u = np.array(u)
 
     for i in np.ndindex(iteridx):
         u_ = np.unique(x_[i])

@@ -23,12 +23,12 @@ def get_unique(x, axis=0):
         u = np.array(u)
 
     for i in np.ndindex(iteridx):
-        u_ = np.unique(x_[i])
-        nan_nat = pd.isnull(u_)
-        uu_ = u_[~nan_nat]
-        if len(uu_)==1:
-            u[i] = uu_[0]
-        elif pd.isnull(u_[0]):
+        u_1dim = np.unique(x_[i])
+        nan_nat = pd.isnull(u_1dim)
+        u_non_null = u_1dim[~nan_nat]
+        if len(u_non_null)==1:
+            u[i] = u_non_null[0]
+        elif pd.isnull(u_1dim[0]):
             if is_dt:
                 u[i] = np.datetime64('NaT')
             else:

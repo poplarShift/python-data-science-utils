@@ -23,7 +23,7 @@ def bokeh2mpl_markers(m):
 
 bokeh2mpl = {
     'force': {
-        'backend': ('backend', 'matplotlib'),
+        'backend': 'matplotlib',
     },
     'all': {
         'height': None,
@@ -31,9 +31,10 @@ bokeh2mpl = {
         'shared_axes': None,
         'shared_datasource': None
     },
-    'Scatter,Points': {
+    'Scatter,Points,ErrorBars': {
         'size': 's',
         'color': 'c',
+        'line_color': 'edgecolor',
         'line_width': 'linewidth',
         'fill_color': 'facecolors',
         'marker': ('marker', bokeh2mpl_markers),
@@ -102,6 +103,7 @@ def update(name, kwargs, lookup, force={}):
     kwargs : dict
     lookup : dict
     force : dict, optional
+        directly set entries as key-value pairs
 
     License
     -------
@@ -117,9 +119,10 @@ def update(name, kwargs, lookup, force={}):
         else:
             updates[k] = v
     for k, v in force.items():
-        k_new, v_new = parse_translation(force, k, v)
-        if k_new is not None:
-            updates[k_new] = v_new
+        updates[k] = v
+        # k_new, v_new = parse_translation(force, k, v)
+        # if k_new is not None:
+        #     updates[k_new] = v_new
     return updates
 
 def extract_if_key_is_substr(d, name):
@@ -131,7 +134,7 @@ def extract_if_key_is_substr(d, name):
     name: str
         name to match
     """
-    return dict(kv for k, v in d.items() if name in k.split(',')
+    return dict(kv for k, v in d.items() if name in k.split(',')+['all']
                 for kv in v.items())
 
 def translate_options(options, dictionaries=bokeh2mpl, override={}):
@@ -155,15 +158,21 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
     for o in options:
         name_full = o.key
         name = name_full.split('.')[0]
+        # lookup dictionary; look in here for keys to check whether
+        # translation for a given kwarg is available
+        lookup = {
+            **dictionaries['all'],
+            **extract_if_key_is_substr(dictionaries, name)
+        }
+
         # presets forced on some options across all Element types:
         force1 = dictionaries['force']
-        force2 = extract_if_key_is_substr(override, name)
+        force2 = override.get('all', {})
+        force3 = extract_if_key_is_substr(override, name)
         kwargs_new = update(name,
                             o.kwargs,
-                            {**dictionaries['all'],
-                             **extract_if_key_is_substr(dictionaries, name)
-                            },
-                            force={**force1, **force2}
+                            lookup,
+                            force={**force1, **force2, **force3}
                            )
         o_new = Options(o.key, **kwargs_new)
         options_new.append(o_new)

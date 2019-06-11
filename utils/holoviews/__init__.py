@@ -1,6 +1,5 @@
 from .switch_backend import *
 
-
 import holoviews as hv
 import pandas as pd
 import numpy as np
@@ -88,6 +87,15 @@ hv.Store.set_current_backend('bokeh')
 # works too:
 # options = Store.options(backend='bokeh')
 # options.Segments = hv.Options('style')
+
+### FLATTEN
+
+def flatten(l):
+    """
+    Collapse data of a dimensioned container one level down
+    """
+    target = l.traverse()[1]
+    return target.clone(data=l.dframe())
 
 ### BIN AVERAGE
 

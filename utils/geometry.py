@@ -24,11 +24,11 @@ def df_to_gdf(df, lon='lon', lat='lat'):
 # need to sort out geometry vs. attr vs dict entry/column,
 # and dataset vs dataframe!!
 
-def build_tree(d1, d2):
+def _build_tree(d1, d2, x, y):
     n1 = np.array(list(zip(d1[x], d1[y])) )
     n2 = np.array(list(zip(d2[x], d2[y])) )
     btree = cKDTree(n2)
-    return cKDTree, n1, n2
+    return btree, n1, n2
 
 def nearest(d1, d2, x='lon', y='lat'):
     """
@@ -43,8 +43,8 @@ def nearest(d1, d2, x='lon', y='lat'):
     dist : distances to each nearest
     idx : indices of each nearest
     """
-    btree, d = build_tree(d1, d2, )
-    return btree.query(d, k=1)
+    btree, n1, _ = _build_tree(d1, d2, x, y)
+    return btree.query(n1, k=1)
 
 def points_within(d1, d2, radius, x='lon', y='lat'):
     """
@@ -64,8 +64,7 @@ def points_within(d1, d2, radius, x='lon', y='lat'):
     idx = btree.query_ball_point(n1, r=radius)
     return idx
 
-def nearest_with_time_constraint(d1, d2, dist_tol=.1, t='date', t_tol=1,
-               x, y):
+def nearest_with_time_constraint(d1, d2, x, y, dist_tol=.1, t='date', t_tol=1):
     """
     For each point in d1, find nearest point in d2,
     and return a boolean index that is True iff their distance is less

@@ -1,5 +1,6 @@
 from .switch_backend import *
 
+
 import holoviews as hv
 import pandas as pd
 import numpy as np
@@ -97,36 +98,6 @@ def flatten(l):
     target = l.traverse()[1]
     return target.clone(data=l.dframe())
 
-### BIN AVERAGE
-
-import param
-class bin_average(hv.Operation):
-    """
-    Computes mean and standard deviations for bins given by their edges.
-
-    Parameters
-    ----------
-    bins: Iterable
-    """
-    bins = param.List(doc='Bin edges.')
-
-    def _process(self, element, key=None):
-        x, y = (element.dimension_values(i) for i in range(2))
-        x_dim, y_dim = (element.dimensions()[i] for i in range(2))
-
-        bins = np.array(self.p.bins)
-        x_avg = bins[:-1] + np.diff(bins)/2
-        y_avg, y16, y84 = (np.nan*np.zeros(len(x_avg)) for i in range(3))
-        for k, ll, ul in zip(range(len(x_avg)), bins[:-1], bins[1:]):
-            y_sel = y[(ll<x) & (x<=ul)]
-            y_avg[k] = np.nanmean(y_sel)
-            y16[k] = np.nanquantile(y_sel, q=0.16)
-            y84[k] = np.nanquantile(y_sel, q=0.84)
-        errors = {x_dim.name: x_avg, y_dim.name: np.array(y_avg),
-                  'y16': np.array(y_avg)-np.array(y16),
-                  'y84': np.array(y84)-np.array(y_avg)}
-        return hv.ErrorBars(errors, kdims=[x_dim], vdims=[y_dim, 'y16', 'y84'])
-
 ### REGRESSION element
 from holoviews.core import Store
 from holoviews.core.options import Compositor
@@ -151,6 +122,7 @@ class regression(hv.Operation):
                 if is_dt:
                     xp = xp.astype(np.datetime64)
         return element.clone((xp, y), new_type=hv.Curve)
+
 
 
 from holoviews.plotting.bokeh import CurvePlot

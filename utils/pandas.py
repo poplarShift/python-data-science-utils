@@ -6,8 +6,8 @@ import geopandas as gpd
 
 def with_df_as_numeric(func):
     """
-    Decorator to handle a temporary conversion from and back to datetimes.
-    Enables arithmetic operations on datetime columns.
+    Decorator to handle a temporary conversion from and back to potentially
+    non-numeric columns. Enables arithmetic operations on datetime columns.
 
     Usage
     -----

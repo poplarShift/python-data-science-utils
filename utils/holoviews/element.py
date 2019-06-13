@@ -4,6 +4,8 @@ from holoviews.element.geom import Geometry
 from holoviews import Store, Dimension
 from holoviews.core.util import max_range
 
+from .operation import regression
+
 class SegmentPlot(ColorbarPlot):
     """
     Segments are lines in 2D space where each two each dimensions specify a
@@ -74,3 +76,30 @@ hv.Store.set_current_backend('bokeh')
 # works too:
 # options = Store.options(backend='bokeh')
 # options.Segments = hv.Options('style')
+
+### REGRESSION element
+from holoviews.core import Store
+from holoviews.core.options import Compositor
+from holoviews.operation import gridmatrix
+
+from holoviews.core.util import datetime_types
+
+from holoviews.plotting.bokeh import CurvePlot
+
+#unsure if necessary?
+class Regression(hv.Curve):
+
+    group = param.String(default='Regression')
+
+class RegressionPlot(CurvePlot):
+    """
+    RegressionPlot visualizes a distribution of values as a KDE.
+    """
+
+hv.Store.register({Regression: RegressionPlot}, 'bokeh')
+
+Compositor.register(Compositor("Regression", regression, None,
+                               'data', transfer_options=True,
+                               transfer_parameters=True,
+                               output_type=hv.Curve,
+                               backends=['bokeh', 'matplotlib']))

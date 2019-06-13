@@ -32,56 +32,6 @@ def flatten(l):
     target = l.traverse()[1]
     return target.clone(data=l.dframe())
 
-### REGRESSION element
-from holoviews.core import Store
-from holoviews.core.options import Compositor
-from holoviews.operation import gridmatrix
-
-from holoviews.core.util import datetime_types
-
-class regression(hv.Operation):
-    def _process(self, element, key=None):
-        xp, yp = (element.dimension_values(i) for i in range(2))
-        if len(xp):
-            if isinstance(xp[0], datetime_types):
-                xp = xp.astype(int)
-                is_dt = True
-            else:
-                is_dt = False
-            inan = ~(np.isnan(xp) | np.isnan(xp))
-            xp, xp = xp[inan], xp[inan]
-            if len(xp):
-                p = np.polyfit(x=xp, y=yp, deg=1)
-                y = p[0]*xp + p[1]
-                if is_dt:
-                    xp = xp.astype(np.datetime64)
-        return element.clone((xp, y), new_type=hv.Curve)
-
-
-
-from holoviews.plotting.bokeh import CurvePlot
-
-#unsure if necessary?
-class Regression(hv.Curve):
-
-    group = param.String(default='Regression')
-
-class RegressionPlot(CurvePlot):
-    """
-    RegressionPlot visualizes a distribution of values as a KDE.
-    """
-
-hv.Store.register({Regression: RegressionPlot}, 'bokeh')
-
-Compositor.register(Compositor("Regression", regression, None,
-                               'data', transfer_options=True,
-                               transfer_parameters=True,
-                               output_type=hv.Curve,
-                               backends=['bokeh', 'matplotlib']))
-
-
-# ---------------------------------
-
 import holoviews.operation.datashader as hd
 import datashader as dsh
 

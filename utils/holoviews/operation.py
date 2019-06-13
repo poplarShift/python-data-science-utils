@@ -81,3 +81,22 @@ class lowess(hv.Operation):
         x_smooth = np.array(x_smooth, dtype=x_dtype)
         y = np.array(y, dtype=y_dtype)
         return element.clone(data=(x_smooth, y_smooth), new_type=hv.Curve)
+
+
+class regression(hv.Operation):
+    def _process(self, element, key=None):
+        xp, yp = (element.dimension_values(i) for i in range(2))
+        if len(xp):
+            if isinstance(xp[0], datetime_types):
+                xp = xp.astype(int)
+                is_dt = True
+            else:
+                is_dt = False
+            inan = ~(np.isnan(xp) | np.isnan(xp))
+            xp, xp = xp[inan], xp[inan]
+            if len(xp):
+                p = np.polyfit(x=xp, y=yp, deg=1)
+                y = p[0]*xp + p[1]
+                if is_dt:
+                    xp = xp.astype(np.datetime64)
+        return element.clone((xp, y), new_type=hv.Curve)

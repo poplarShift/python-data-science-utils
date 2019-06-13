@@ -1,6 +1,6 @@
 from .switch_backend import *
-from .element.py import *
-
+from .element import *
+from .operation import *
 
 import holoviews as hv
 import pandas as pd

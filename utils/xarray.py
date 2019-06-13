@@ -2,6 +2,64 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
+import statsmodels.api as sm
+
+def apply_1d(da, func, dim, **kwargs):
+    """
+    For those occasions
+
+    Parameters
+    ----------
+    da : xarray DataArray
+    dim : Dimension over which to apply func
+    """
+    da_dropped = da.isel({dim: 0}).drop(dim)
+    dims = da_dropped.coords.dims
+
+    results = np.nan * da_dropped
+    for idx, _ in np.ndenumerate(da_dropped):
+        sel_dict = {c: i for c, i in zip(dims, idx)}
+        res = func(da[sel_dict], **kwargs)
+        results[sel_dict] = res
+    return results
+
+def ols(da, param='slope'):
+    """
+    Parameters
+    ----------
+    data : xarray DataArray
+    str, one of ['slope', 'intercept', 'slope_pvalue',
+        'intercept_pvalue', 'slope_se', 'intercept_se',]
+        sought-after regression parameter
+    Notes
+    -----
+    """
+    data = da.dropna(dim=da.dims[0])
+
+    # specify function with which to retrieve sought-after
+    # parameter from statsmodels RegressionResultsWrapper
+    res_fn = {
+        'intercept': lambda res: res.params[0],
+        'slope': lambda res: res.params[1],
+        'intercept_pvalue': lambda res: res.pvalues[0],
+        'slope_pvalue': lambda res: res.pvalues[1],
+        'intercept_se': lambda res: res.bse[0],
+        'slope_se': lambda res: res.bse[1],
+    }
+
+    if len(data)>=2:
+        y = data.values
+        xdata = data[data.dims[0]]
+        if xdata.dtype.kind in ['M']:
+            x = xdata.astype(float).values/1e9/86400.
+        else:
+            x = xdata.values
+        ols = sm.OLS(y, sm.add_constant(x))
+        res = ols.fit()
+        return res_fn[param](res)
+    else:
+        return np.nan
+
 def get_unique(x, axis=0):
     """
     Return unique non-nan value along specified xarray axis.

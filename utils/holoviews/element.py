@@ -1,3 +1,6 @@
+import param
+import holoviews as hv
+
 from holoviews.plotting.bokeh.chart import line_properties, fill_properties
 from holoviews.plotting.bokeh.element import ColorbarPlot
 from holoviews.element.geom import Geometry

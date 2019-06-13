@@ -4,6 +4,25 @@ import functools
 from shapely.geometry import Point
 import geopandas as gpd
 
+def date_range_with_fix(*args, fixed_date, **kwargs):
+    """
+    Force pandas' date_range function to contain a specific date
+    by snapping to the closest date.
+
+    Parameters
+    ----------
+    fixed_date : Anything that can be consumed by pd.Timestamp
+    Other args: Anything else that goes into pd.date_range
+    """
+    t = pd.date_range(*args, **kwargs)
+
+    diff = t - pd.Timestamp(fixed_date)
+
+    idx = np.abs(diff).argmin()
+    offset = diff[idx]
+
+    return t - offset
+
 def with_df_as_numeric(func):
     """
     Decorator to handle a temporary conversion from and back to potentially

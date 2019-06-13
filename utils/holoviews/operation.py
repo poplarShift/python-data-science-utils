@@ -58,8 +58,9 @@ class lowess(hv.Operation):
         x = x.astype(int) if isdatetime(x) else x
         y = y.astype(int) if isdatetime(y) else y
 
-        # kwargs['delta'] = kwargs.get('delta', 0.00001*np.ptp(x))
-        kwargs['frac'] = kwargs.get('frac', .2)
+        delta_fraction = kwargs.pop('delta_fraction', 0.01)
+        kwargs['delta'] = kwargs.get('delta', delta_fraction*np.ptp(x))
+        # kwargs['frac'] = kwargs.get('frac', .2)
         x_smooth, y_smooth = np.split(sm_lowess(y, x, **kwargs), 2, axis=1)
         x_smooth = np.array(x_smooth, dtype=x_dtype)
         y = np.array(y, dtype=y_dtype)

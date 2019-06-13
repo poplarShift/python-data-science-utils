@@ -2,6 +2,7 @@ import holoviews as hv
 import param
 from holoviews.core.util import isdatetime
 import numpy as np
+import pandas as pd
 
 class bin_average(hv.Operation):
     """
@@ -11,13 +12,28 @@ class bin_average(hv.Operation):
     ----------
     bins: Iterable
     """
-    bins = param.List(doc='Bin edges.')
+    bins = param.Integer(default=10,
+        # objects=[int, list],
+        allow_None=True,
+        doc='Bin edges.')
 
     def _process(self, element, key=None):
         x, y = (element.dimension_values(i) for i in range(2))
         x_dim, y_dim = (element.dimensions()[i] for i in range(2))
 
-        bins = np.array(self.p.bins)
+        bins = self.p.bins
+        bins = np.array(bins)
+        # if bins is None:
+        #     bins = 10
+        # if isinstance(bins, int):
+        #     print(isdatetime(x))
+        #     if isdatetime(x):
+        #         bins = pd.date_range(x.min(), x.max(), periods=bins)
+        #     else:
+        #         bins = np.linspace(x.min(), x.max(), bins)
+        # elif isinstance(bins, list):
+        #     bins = np.array(bins)
+
         x_avg = bins[:-1] + np.diff(bins)/2
         y_avg, y16, y84 = (np.nan*np.zeros(len(x_avg)) for i in range(3))
         for k, ll, ul in zip(range(len(x_avg)), bins[:-1], bins[1:]):

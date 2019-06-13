@@ -3,6 +3,7 @@ import pandas as pd
 import functools
 from shapely.geometry import Point
 import geopandas as gpd
+from fiona.crs import from_epsg
 
 def date_range_with_fix(*args, fixed_date, **kwargs):
     """

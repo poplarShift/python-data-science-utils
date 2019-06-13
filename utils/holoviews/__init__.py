@@ -81,13 +81,20 @@ class Segments(Geometry):
                        bounds=(4, 4), constant=True, doc="""
         Segments represent lines given by x- and y-
         coordinates in 2D space.""")
+### Add datetime accessor to dim transforms:
 
+def _dt(self, attr='month'):
+    def get_dt(x, attr):
+        # allowed = [attr for attr in dir(a.dt) if not attr.startswith('_')]
+        return getattr(pd.Series(x).dt, attr).values
+    return dim(self, get_dt, attr)
 
 hv.Store.register({Segments: SegmentPlot}, 'bokeh')
 hv.Store.set_current_backend('bokeh')
 # works too:
 # options = Store.options(backend='bokeh')
 # options.Segments = hv.Options('style')
+hv.dim.dt = _dt
 
 ### FLATTEN
 

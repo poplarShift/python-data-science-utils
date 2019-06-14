@@ -1,25 +1,31 @@
 from copy import deepcopy
-from holoviews import Options, dim
+from holoviews import Options, dim, Cycle
 
-def bokeh2mpl_markers(m):
-    transl = {
-        'cross': 'x',
-        'square': 's',
-        'diamond': 'd',
-        'triangle': '<',
-        'circle': 'o',
-        'asterisk': '*'
+bokeh2mpl_markers = {
+    'cross': 'x',
+    'square': 's',
+    'diamond': 'd',
+    'triangle': '<',
+    'circle': 'o',
+    'asterisk': '*'
+}
+
+def translate_recursively(x, translation_dict):
+    if isinstance(x, str):
+        return translation_dict[x]
+    elif isinstance(x, dim):
+        xx = deepcopy(x)
+        kw = xx.ops[0]['kwargs']
+        kw_new = {
+            k: {
+                kk: translate_recursively(vv, translation_dict)
+                for kk, vv in v.items()
+            } if isinstance(v, dict)
+            else translate_recursively(v, translation_dict)
+            for k, v in kw.items()
         }
-    if isinstance(m, str):
-        return transl[m]
-    elif isinstance(m, dim):
-        d = deepcopy(m)
-        kw = d.ops[0]['kwargs']
-        kw_new = {k: {kk: bokeh2mpl_markers(vv) for kk, vv in v.items()}
-            if isinstance(v, dict) else bokeh2mpl_markers(v)
-            for k, v in kw.items()}
-        d.ops[0]['kwargs'] = kw_new
-        return d
+        xx.ops[0]['kwargs'] = kw_new
+        return xx
 
 bokeh2mpl = {
     'force': {
@@ -38,7 +44,9 @@ bokeh2mpl = {
         'line_width': 'linewidth',
         'line_dash': 'linestyle',
         'fill_color': 'facecolors',
-        'marker': ('marker', bokeh2mpl_markers),
+        'marker': (
+            'marker', lambda m: translate_recursively(m, bokeh2mpl_markers)
+        ),
     },
     'Points': {
         'line_color': 'edgecolor',

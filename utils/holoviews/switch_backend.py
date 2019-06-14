@@ -39,6 +39,7 @@ bokeh2mpl = {
         'width': None,
         'shared_axes': None,
         'shared_datasource': None,
+        'tools': None,
     },
     'Scatter,Points,ErrorBars,Shape': {
         'size': 's',

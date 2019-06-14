@@ -35,7 +35,16 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
         y = xyz_projected[:, 1]
         y0 = np.interp(x0, x ,y)
         if map_extent[2]<y0<map_extent[3]:
-            ax.text(x0-label_offset, y0, '{:2d}$^\circ$N'.format(lat), horizontalalignment = 'right', verticalalignment='center', **label_opts)
+            ax.text(
+                x0-label_offset, y0,
+                '{:2d}$^\circ${}'.format(
+                    abs(lat),
+                    {True: 'N', False: 'S'}[lat>0]
+                ),
+                horizontalalignment = 'right',
+                verticalalignment='center',
+                **label_opts
+            )
 
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
     y0,_ = ax.get_ylim()
@@ -49,4 +58,13 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
 
         x0 = np.interp(y0, y, x)
         if map_extent[0]<x0<map_extent[1]:
-            ax.text(x0, y0-label_offset, '{:2d}$^\circ$W'.format(-lon), horizontalalignment = 'center', verticalalignment='top', **label_opts)
+            ax.text(
+                x0, y0-label_offset,
+                '{:2d}$^\circ${}'.format(
+                    abs(lon),
+                    {True: 'E', False: 'W'}[lon>0]
+                ),
+                horizontalalignment = 'center',
+                verticalalignment='top',
+                **label_opts
+            )

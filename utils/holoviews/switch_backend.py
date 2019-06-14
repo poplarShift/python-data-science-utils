@@ -29,13 +29,14 @@ bokeh2mpl = {
         'height': None,
         'width': None,
         'shared_axes': None,
-        'shared_datasource': None
+        'shared_datasource': None,
     },
-    'Scatter,Points,ErrorBars': {
+    'Scatter,Points,ErrorBars,Shape': {
         'size': 's',
         'color': 'c',
         'line_color': 'edgecolor',
         'line_width': 'linewidth',
+        'line_dash': 'linestyle',
         'fill_color': 'facecolors',
         'marker': ('marker', bokeh2mpl_markers),
     },
@@ -45,18 +46,35 @@ bokeh2mpl = {
     'VLine': {
         'line_color': 'linecolor',
         'line_width': 'linewidth',
-    }
+    },
+    'Labels': {
+        'text_align': None,
+        'text_color': 'color',
+    },
 }
 
 def set_new_value(new_value_or_fn, old_value):
     """
-    Either replace or transform the old value using the new value or function.
+    Either replace the old value or transform it using the function.
     """
     if callable(new_value_or_fn):
         return new_value_or_fn(old_value)
     else:
         return new_value_or_fn
 
+def extract_if_key_is_substr(d, key):
+    """
+    Parameters
+    ----------
+    d: dict
+        where keys can be of the form 'key1,key2,...'
+    key: str
+        key to match
+    """
+    return dict(kv
+                for k, v in d.items() if key in k.split(',')+['all']
+                for kv in v.items()
+                )
 
 def parse_translation(lookup, k, v):
     """
@@ -92,10 +110,10 @@ def parse_translation(lookup, k, v):
         k_new, v_new = k, set_new_value(translate_to, v)
     return k_new, v_new
 
-def update(name, kwargs, lookup, force={}):
+def update_element(name, kwargs, lookup, force={}):
     """
-    Given kwargs, translate its key-value pairs using lookup
-    and force them using dict `force`, as applicable.
+    For each element 'name', given kwargs, translate its key-value pairs
+    using lookup and force them using dict `force`, as applicable.
 
     Parameters
     ----------
@@ -125,21 +143,9 @@ def update(name, kwargs, lookup, force={}):
         #     updates[k_new] = v_new
     return updates
 
-def extract_if_key_is_substr(d, name):
-    """
-    Parameters
-    ----------
-    d: dict
-        where keys can be of the form 'name1,name2,...'
-    name: str
-        name to match
-    """
-    return dict(kv for k, v in d.items() if name in k.split(',')+['all']
-                for kv in v.items())
-
 def translate_options(options, dictionaries=bokeh2mpl, override={}):
     """
-    Translate a list of holoviews options using a given appropriate dictionaries.
+    Translate a list of holoviews options using a given dict of dicts.
 
     Parameters
     ----------
@@ -154,6 +160,14 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
     -------
     GNU-GPL, see https://github.com/poplarShift/pyviz-recipes
     """
+    # presets forced on some options across all Element types:
+    # 1 -- if the default translation dictionary (such as bokeh2mpl) defines
+    #      options that need to be forced
+    force1 = dictionaries.get('force', {})
+    # 2 -- if the case-specific override dict contains a section pertaining
+    #      to all elements
+    force2 = override.get('all', {})
+
     options_new = []
     for o in options:
         name_full = o.key
@@ -162,18 +176,21 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
         # translation for a given kwarg is available
         lookup = {
             **dictionaries['all'],
-            **extract_if_key_is_substr(dictionaries, name)
+            **extract_if_key_is_substr(dictionaries, name),
+            **extract_if_key_is_substr(dictionaries, name_full)
+        }
+        # 3 -- complete element-specific override variables
+        force3 = {
+            **extract_if_key_is_substr(override, name),
+            **extract_if_key_is_substr(override, name_full),
         }
 
-        # presets forced on some options across all Element types:
-        force1 = dictionaries['force']
-        force2 = override.get('all', {})
-        force3 = extract_if_key_is_substr(override, name)
-        kwargs_new = update(name,
-                            o.kwargs,
-                            lookup,
-                            force={**force1, **force2, **force3}
-                           )
-        o_new = Options(o.key, **kwargs_new)
+        kwargs_new = update_element(
+            name_full,
+            o.kwargs,
+            lookup,
+            force={**force1, **force2, **force3}
+        )
+        o_new = Options(name_full, **kwargs_new)
         options_new.append(o_new)
     return options_new

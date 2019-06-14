@@ -2,13 +2,20 @@ import cartopy.crs as ccrs
 import matplotlib.ticker as mticker
 import numpy as np
 
-def set_cartopy_grid(ax, lons, lats):
+def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
     """
-    Add graticules
+    Add graticules and label them
     """
+    if label_opts is None:
+        label_opts = {}
+    if grid_opts is None:
+        grid_opts = {}
+    label_offset = kwargs.pop('label_offset', 1e-4)
+
     proj = ax.projection
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False,
-                      linewidth=1, color='gray', alpha=0.5, linestyle='--')
+                      linewidth=1, color='gray', alpha=0.5, linestyle='--',
+                      **grid_opts)
 
     gl.xlocator = mticker.FixedLocator(lons)
     gl.ylocator = mticker.FixedLocator(lats)
@@ -28,7 +35,7 @@ def set_cartopy_grid(ax, lons, lats):
         y = xyz_projected[:, 1]
         y0 = np.interp(x0, x ,y)
         if map_extent[2]<y0<map_extent[3]:
-            ax.text(x0-1e4,y0,'{:2d}$^\circ$N'.format(lat), horizontalalignment = 'right', verticalalignment='center')
+            ax.text(x0-label_offset, y0, '{:2d}$^\circ$N'.format(lat), horizontalalignment = 'right', verticalalignment='center', **label_opts)
 
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
     y0,_ = ax.get_ylim()
@@ -42,4 +49,4 @@ def set_cartopy_grid(ax, lons, lats):
 
         x0 = np.interp(y0, y, x)
         if map_extent[0]<x0<map_extent[1]:
-            ax.text(x0,y0-1e4,'{:2d}$^\circ$W'.format(-lon), horizontalalignment = 'center', verticalalignment='top')
+            ax.text(x0, y0-label_offset, '{:2d}$^\circ$W'.format(-lon), horizontalalignment = 'center', verticalalignment='top', **label_opts)

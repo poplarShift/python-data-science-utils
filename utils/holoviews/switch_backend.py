@@ -12,7 +12,10 @@ bokeh2mpl_markers = {
 
 def translate_recursively(x, translation_dict):
     if isinstance(x, str):
-        return translation_dict[x]
+        return translation_dict.get(x, x)
+    elif isinstance(x, Cycle):
+        return Cycle([translate_recursively(v, translation_dict)
+                      for v in x.values])
     elif isinstance(x, dim):
         xx = deepcopy(x)
         kw = xx.ops[0]['kwargs']

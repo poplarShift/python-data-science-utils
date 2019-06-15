@@ -6,11 +6,13 @@ import statsmodels.api as sm
 
 def apply_1d(da, func, dim, **kwargs):
     """
-    For those occasions
+    For those occasions where you'd think that ds.reduce() should do the trick,
+    but you somehow don't have a function that already handles ndarrays.
 
     Parameters
     ----------
     da : xarray DataArray
+    func : Function that can handle a 1-dimensional ndarray
     dim : Dimension over which to apply func
     """
     da_dropped = da.isel({dim: 0}).drop(dim)

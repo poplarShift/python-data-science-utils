@@ -71,7 +71,7 @@ with suppress(ImportError):
 
     try:
         # extents=(-90, 65, -45, 78)
-        bathy = gpd.read_file('/Users/doppler/database/IBCAO/IBCAO_1min.shp').set_index('contour').geometry
+        bathy = gpd.read_file('~/database/IBCAO/IBCAO_1min.shp').set_index('contour').geometry
         # e.g. bathy200 = bathy.loc[200]
         # bathy = bathy.intersection(shapely.geometry.box(*extents))
         # bathy.crs = from_epsg(4326)

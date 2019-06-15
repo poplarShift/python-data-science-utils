@@ -1,9 +1,14 @@
-# USAGE
-# from utils.standard_imports import *
+__doc__ = """USAGE:
+from utils.standard_imports import *
+"""
 
-from contextlib import suppress
+# https://github.com/ajalt/fuckitpy
+from . import fuckit # cause why not??
 
-with suppress(ImportError):
+# silence everything
+@fuckit
+def imports(name_space):
+
     #BASIC
 
     from collections import OrderedDict
@@ -119,3 +124,14 @@ with suppress(ImportError):
         hv.renderer('bokeh').theme = theme
     except:
         pass
+
+    for name, func in locals().items():
+        if name != 'name_space':
+            name_space[name] = func
+
+imports(globals())
+
+# the boring way with way more boilerplate:
+# from contextlib import suppress
+# with suppress(ImportError):
+# etc

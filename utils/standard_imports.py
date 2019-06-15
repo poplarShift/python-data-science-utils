@@ -17,6 +17,7 @@ with suppress(ImportError):
 
     from pysolar.solar import get_altitude
     import gsw
+    from scipy.io import loadmat
 
     # DATA
 

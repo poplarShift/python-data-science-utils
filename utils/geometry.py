@@ -3,24 +3,6 @@ import numpy as np
 from shapely.geometry import Point
 from geopandas import GeoDataFrame
 
-def df_to_gdf(df, lon='lon', lat='lat'):
-    """
-    Turn pandas dataframe with latitude, longitude columns into GeoDataFrame with according Point geometry.
-
-    Parameters
-    ----------
-    df : pandas dataframe
-    lon, lat : names of lon, lat columns
-
-    Returns
-    -------
-    geopandas geodataframe
-    """
-    df=gpd.GeoDataFrame(df).copy()
-    df['geometry'] = [Point(x, y) for x, y in zip(df[lon], df[lat])]
-    df.crs = from_epsg(4326)
-    return df
-
 # need to sort out geometry vs. attr vs dict entry/column,
 # and dataset vs dataframe!!
 

@@ -11,6 +11,8 @@ bokeh2mpl_markers = {
 }
 
 def translate_recursively(x, translation_dict):
+    """
+    """
     if isinstance(x, str):
         return translation_dict.get(x, x)
     elif isinstance(x, Cycle):
@@ -98,10 +100,6 @@ def parse_translation(lookup, k, v):
         {k: k_new} or {k: (k_new, v_new)} or {k: (k_new, lambda x: v_new)} or ...
     k : str
     v : dict value (if tuple, has to be of form (str, _))
-
-    License
-    -------
-    GNU-GPL, see https://github.com/poplarShift/pyviz-recipes
     """
     translate_to = lookup[k]
     if translate_to is None:
@@ -134,10 +132,6 @@ def update_element(name, kwargs, lookup, force={}):
     lookup : dict
     force : dict, optional
         directly set entries as key-value pairs
-
-    License
-    -------
-    GNU-GPL, see https://github.com/poplarShift/pyviz-recipes
     """
     updates = {}
     for k, v in kwargs.items():
@@ -167,10 +161,6 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
         Translations to be applied as needed
     override : dict of dicts
         overrides everything else
-
-    License
-    -------
-    GNU-GPL, see https://github.com/poplarShift/pyviz-recipes
     """
     # presets forced on some options across all Element types:
     # 1 -- if the default translation dictionary (such as bokeh2mpl) defines

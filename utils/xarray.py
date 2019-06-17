@@ -2,8 +2,6 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-import statsmodels.api as sm
-
 def apply_1d(da, func, dim, **kwargs):
     """
     For those occasions where you'd think that ds.reduce() should do the trick,
@@ -14,6 +12,11 @@ def apply_1d(da, func, dim, **kwargs):
     da : xarray DataArray
     func : Function that can handle a 1-dimensional ndarray
     dim : Dimension over which to apply func
+
+    License
+    -------
+    GNU-GPLv3, (C) A. Randelhoff
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     da_dropped = da.isel({dim: 0}).drop(dim)
     dims = da_dropped.coords.dims
@@ -27,15 +30,27 @@ def apply_1d(da, func, dim, **kwargs):
 
 def ols(da, param='slope'):
     """
+    Apply statsmodel's OLS regression to a 1d DataArray.
+    Handles datetimes.
+
     Parameters
     ----------
     data : xarray DataArray
     str, one of ['slope', 'intercept', 'slope_pvalue',
         'intercept_pvalue', 'slope_se', 'intercept_se',]
         sought-after regression parameter
+
     Notes
     -----
+    https://www.statsmodels.org/dev/generated/statsmodels.regression.linear_model.OLS.html
+
+    License
+    -------
+    GNU-GPLv3, (C) A. Randelhoff
+    (https://github.com/poplarShift/python-data-science-utils)
     """
+    import statsmodels.api as sm
+
     data = da.dropna(dim=da.dims[0])
 
     # specify function with which to retrieve sought-after
@@ -65,6 +80,7 @@ def ols(da, param='slope'):
 def get_unique(x, axis=0):
     """
     Return unique non-nan value along specified xarray axis.
+    Use this to squeeze out dimensions with length>1.
 
     Raises
     ------
@@ -73,6 +89,11 @@ def get_unique(x, axis=0):
     Usage
     -----
     ds.reduce(get_unique, dim=some_dim)
+
+    License
+    -------
+    GNU-GPLv3, (C) A. Randelhoff
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     is_dt = np.issubdtype(x.dtype, np.datetime64)
     x_ = np.moveaxis(x, source=axis, destination=-1)

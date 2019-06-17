@@ -11,6 +11,11 @@ class bin_average(hv.Operation):
     Parameters
     ----------
     bins: Iterable
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     bins = param.Integer(default=10,
         # objects=[int, list],
@@ -57,6 +62,11 @@ class lowess(hv.Operation):
 
     Reference:
         https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.smoothers_lowess.lowess.html
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     kwargs = param.Dict(default=None, doc='''kwargs to pass on to smoother.
         return_sorted=True is always forced.''')
@@ -84,6 +94,14 @@ class lowess(hv.Operation):
 
 
 class regression(hv.Operation):
+    """
+    Perform linear regression on element.
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+    """
     def _process(self, element, key=None):
         xp, yp = (element.dimension_values(i) for i in range(2))
         if len(xp):

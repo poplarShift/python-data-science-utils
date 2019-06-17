@@ -24,7 +24,12 @@ def nearest(d1, d2, x='lon', y='lat'):
     -------
     dist : distances to each nearest
     idx : indices of each nearest
-    """
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+        """
     btree, n1, _ = _build_tree(d1, d2, x, y)
     return btree.query(n1, k=1)
 
@@ -39,6 +44,11 @@ def points_within(d1, d2, radius, x='lon', y='lat'):
     Returns
     -------
     idx : indices
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     n1 = np.array(list(zip(d1.geometry.x, d1.geometry.y)) )
     n2 = np.array(list(zip(d2.geometry.x, d2.geometry.y)) )
@@ -51,6 +61,7 @@ def nearest_with_time_constraint(d1, d2, x, y, dist_tol=.1, t='date', t_tol=1):
     For each point in d1, find nearest point in d2,
     and return a boolean index that is True iff their distance is less
     than dist_tol and they are not further apart in time than t_tol days.
+    Confused yet?
 
     Parameters
     ----------
@@ -63,6 +74,11 @@ def nearest_with_time_constraint(d1, d2, x, y, dist_tol=.1, t='date', t_tol=1):
     -------
     nearest :
     within_tol : bool array, True of nearest neighbour within dist_tol and t_tol
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     n1 = np.array(list(zip(d1[x], d1[y])) )
     n2 = np.array(list(zip(d2[x], d2[y])) )

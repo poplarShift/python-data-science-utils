@@ -4,8 +4,13 @@ import numpy as np
 
 def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
     """
-    Add graticules and label them
-    """
+    Add graticules to cartopy GeoAxes and label them
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+        """
     if label_opts is None:
         label_opts = {}
     if grid_opts is None:

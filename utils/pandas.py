@@ -14,6 +14,11 @@ def date_range_with_fix(*args, fixed_date, **kwargs):
     ----------
     fixed_date : Anything that can be consumed by pd.Timestamp
     Other args: Anything else that goes into pd.date_range
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     t = pd.date_range(*args, **kwargs)
 
@@ -27,7 +32,7 @@ def date_range_with_fix(*args, fixed_date, **kwargs):
 def with_df_as_numeric(func):
     """
     Decorator to handle a temporary conversion from and back to potentially
-    non-numeric columns. Enables arithmetic operations on datetime columns.
+    non-numeric columns. Enables e.g. arithmetic operations on datetime columns.
 
     Usage
     -----
@@ -36,6 +41,11 @@ def with_df_as_numeric(func):
         lambda d: d.groupby('CYCLE_NUMBER', as_index=False)[['LONGITUDE', 'LATITUDE', 'JULD']].mean(),
     )(df, 'JULD')
     ```
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     @functools.wraps(func)
     def wrapper(df, columns):
@@ -65,6 +75,11 @@ def df_to_gdf(df, lon='lon', lat='lat'):
     Returns
     -------
     geopandas geodataframe
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     df = gpd.GeoDataFrame(df).copy()
     df['geometry'] = [Point(x, y) for x, y in zip(df[lon], df[lat])]

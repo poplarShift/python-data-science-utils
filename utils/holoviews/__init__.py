@@ -70,6 +70,11 @@ def _to_dframe(e):
 def get_all_data(obj):
     """
     Produce pandas DataFrame from any holoviews object.
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
 
     df_list = obj.traverse(fn=_to_dframe, specs=lambda x: not x._deep_indexable)
@@ -103,6 +108,11 @@ def agg_vdims(elements, vdims=None, N=100):
         List of vdim names over which to aggregate for each Element
     N : int
         Number of bins (in each kdim) to aggegrate
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
     """
     data = []
     kdims0 = [kd.name for kd in elements[0].kdims]

@@ -2,6 +2,8 @@ from .switch_backend import *
 from .element import *
 from .operation import *
 
+from functools import reduce
+
 import holoviews as hv
 import pandas as pd
 import numpy as np
@@ -40,6 +42,47 @@ def flatten(l):
     """
     target = l.traverse()[1]
     return target.clone(data=l.dframe())
+
+### extract all data from object
+
+_sanitize_units = str.maketrans("⁰¹²³⁴⁵⁶⁷⁸⁹⁻μ", "0123456789-u")
+_sanitize_units.update({176: 'deg'}) # degree symbol
+
+def _create_column_header(d):
+    """
+    Convert hv.Dimension into descriptive string
+    """
+    s = d.label
+    if d.unit is not None:
+        s += '_' + d.unit
+    return s.translate(_sanitize_units).replace(' ', '_')
+
+def _to_dframe(e):
+    translate_dimensions_dict = {
+            d.name: _create_column_header(d)
+            for d in e.dimensions() if d.label is not None
+        }
+    dims = [d.name for d in e.dimensions()[:2]]
+    df = e.dframe().dropna(subset=dims, how='any')
+    # df = df.assign(Element=e.group)
+    return df.rename(columns=translate_dimensions_dict)
+
+def get_all_data(obj):
+    """
+    Produce pandas DataFrame from any holoviews object.
+    """
+
+    df_list = obj.traverse(fn=_to_dframe, specs=lambda x: not x._deep_indexable)
+    # specs=lambda x: hasattr(x, 'dframe')
+    # too permissive, both nd containers and elements have it
+
+    # do not separate between frames for now, in principle each dimension
+    # should be unique w/r/t values they represent...
+    # df_list = [df.assign(Frame=i) for i, df in enumerate(df_list)]
+
+    return reduce(lambda df1, df2: df1.merge(df2, how='outer'), df_list)
+
+### aggregate & compare vdims over a number of elements
 
 import holoviews.operation.datashader as hd
 import datashader as dsh

@@ -196,3 +196,8 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
         o_new = Options(name_full, **kwargs_new)
         options_new.append(o_new)
     return options_new
+
+
+def add_backend_to_opts(opts, backend):
+    for k, o in enumerate(opts):
+        opts[k] = Options(o.key, **{**o.kwargs, **{'backend': backend}})

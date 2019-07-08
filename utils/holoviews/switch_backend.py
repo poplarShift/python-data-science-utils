@@ -1,4 +1,6 @@
 from copy import deepcopy
+from collections import OrderedDict
+import numpy as np
 from holoviews import Options, dim, Cycle
 
 bokeh2mpl_markers = {
@@ -10,23 +12,33 @@ bokeh2mpl_markers = {
     'asterisk': '*'
 }
 
-def translate_recursively(x, translation_dict):
+def translate_recursively(x, translator):
     """
+    Parameters
+    ----------
+    x : whatever needs to be translated
+    translator: dictionary (such as bokeh2mpl_markers), or function
     """
-    if isinstance(x, str):
-        return translation_dict.get(x, x)
+    if isinstance(x, (str, int, float)) or np.isscalar(x):
+        if isinstance(translator, (dict, OrderedDict)):
+            return translator.get(x, x)
+        elif callable(translator):
+            try:
+                return translator(x)
+            except:
+                return x
     elif isinstance(x, Cycle):
-        return Cycle([translate_recursively(v, translation_dict)
+        return Cycle([translate_recursively(v, translator)
                       for v in x.values])
     elif isinstance(x, dim):
         xx = deepcopy(x)
         kw = xx.ops[0]['kwargs']
         kw_new = {
             k: {
-                kk: translate_recursively(vv, translation_dict)
+                kk: translate_recursively(vv, translator)
                 for kk, vv in v.items()
             } if isinstance(v, dict)
-            else translate_recursively(v, translation_dict)
+            else translate_recursively(v, translator)
             for k, v in kw.items()
         }
         xx.ops[0]['kwargs'] = kw_new
@@ -51,7 +63,10 @@ bokeh2mpl = {
         'line_dash': 'linestyle',
         'fill_color': 'facecolors',
         'marker': (
-            'marker', lambda m: translate_recursively(m, bokeh2mpl_markers)
+            'marker', lambda x: translate_recursively(x, bokeh2mpl_markers)
+        ),
+        'size': (
+            's', lambda x: translate_recursively(x, lambda s: 10*s)
         ),
     },
     'Points': {

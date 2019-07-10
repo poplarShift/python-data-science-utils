@@ -44,17 +44,55 @@ def translate_recursively(x, translator):
         xx.ops[0]['kwargs'] = kw_new
         return xx
 
+# each value of this dict has keys for the bokeh option and the corresponding
+# mpl option as value. (None means option will be discarded.)
+# Tuples have the mpl option name as first entry and the corresponding value as
+# second entry
 bokeh2mpl = {
+    # 'force' is an exception: it has the option as key but the new value of the
+    # option in the mpl backend is the corresponding dict value
     'force': {
         'backend': 'matplotlib',
+        'hooks': [],
     },
+    # apply to all elements
     'all': {
         'height': None,
         'width': None,
         'shared_axes': None,
         'shared_datasource': None,
         'tools': None,
+        'toolbar': None,
+        'legend_position': None,
     },
+    'Bars': {
+        'line_width': None,
+    },
+    'Points': {
+        'line_color': 'edgecolor',
+    },
+    'Feature': {
+        'fill_color': 'facecolor',
+        'line_color': 'edgecolor',
+        'line_width': 'linewidth',
+    },
+    'HexTiles': {
+        'cmap': None,
+    },
+    'Polygons': {
+        'fill_color': 'facecolor',
+        'line_color': 'ecolor',
+        'line_width': 'linewidth',
+    },
+    'VLine': {
+        'line_color': 'linecolor',
+        'line_width': 'linewidth',
+    },
+    'Labels': {
+        'text_align': None,
+        'text_color': 'color',
+    },
+    # multiple
     'Scatter,Points,ErrorBars,Shape': {
         'size': 's',
         'color': 'c',
@@ -68,17 +106,6 @@ bokeh2mpl = {
         'size': (
             's', lambda x: translate_recursively(x, lambda s: 10*s)
         ),
-    },
-    'Points': {
-        'line_color': 'edgecolor',
-    },
-    'VLine': {
-        'line_color': 'linecolor',
-        'line_width': 'linewidth',
-    },
-    'Labels': {
-        'text_align': None,
-        'text_color': 'color',
     },
 }
 

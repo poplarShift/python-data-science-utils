@@ -191,7 +191,7 @@ def update_element(name, kwargs, lookup, force={}):
         #     updates[k_new] = v_new
     return updates
 
-def translate_options(options, dictionaries=bokeh2mpl, override={}):
+def translate_options(options, dictionaries=None, override={}):
     """
     Translate a list of holoviews options using a given dict of dicts.
 
@@ -204,6 +204,8 @@ def translate_options(options, dictionaries=bokeh2mpl, override={}):
     override : dict of dicts
         overrides everything else
     """
+    if dictionaries is None:
+        dictionaries = bokeh2mpl
     # presets forced on some options across all Element types:
     # 1 -- if the default translation dictionary (such as bokeh2mpl) defines
     #      options that need to be forced

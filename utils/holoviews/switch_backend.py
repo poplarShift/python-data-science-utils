@@ -9,7 +9,12 @@ bokeh2mpl_markers = {
     'diamond': 'd',
     'triangle': '<',
     'circle': 'o',
-    'asterisk': '*'
+    'asterisk': '*',
+}
+
+bokeh2mpl_linestyles = {
+    'dotted': ':',
+    'dashed': '--',
 }
 
 def translate_recursively(x, translator):
@@ -95,13 +100,22 @@ bokeh2mpl = {
         'text_align': None,
         'text_color': 'color',
     },
+    'Curve': {
+        'line_dash': (
+            'linestyle',
+            lambda x: translate_recursively(x, bokeh2mpl_linestyles)
+        ),
+    },
     # multiple
     'Scatter,Points,ErrorBars,Shape': {
         'size': 's',
         'color': 'c',
         'line_color': 'edgecolor',
         'line_width': 'linewidth',
-        'line_dash': 'linestyle',
+        'line_dash': (
+            'linestyle',
+            lambda x: translate_recursively(x, bokeh2mpl_linestyles)
+        ),
         'fill_color': 'facecolors',
         'marker': (
             'marker', lambda x: translate_recursively(x, bokeh2mpl_markers)

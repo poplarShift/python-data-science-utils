@@ -59,11 +59,14 @@ bokeh2mpl = {
     'all': {
         'height': None,
         'width': None,
+        'frame_height': None,
+        'frame_width': None,
         'shared_axes': None,
         'shared_datasource': None,
         'tools': None,
         'toolbar': None,
         'legend_position': None,
+        'sizing_mode': None,
     },
     'Bars': {
         'line_width': None,
@@ -81,7 +84,7 @@ bokeh2mpl = {
     },
     'Polygons': {
         'fill_color': 'facecolor',
-        'line_color': 'ecolor',
+        'line_color': 'edgecolor',
         'line_width': 'linewidth',
     },
     'VLine': {

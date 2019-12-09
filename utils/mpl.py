@@ -1,5 +1,6 @@
 import cartopy.crs as ccrs
 import matplotlib.ticker as mticker
+from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import numpy as np
 
 def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
@@ -41,11 +42,7 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
         y0 = np.interp(x0, x ,y)
         if map_extent[2]<y0<map_extent[3]:
             ax.text(
-                x0-label_offset, y0,
-                '{:2d}$^\circ${}'.format(
-                    abs(lat),
-                    {True: 'N', False: 'S'}[lat>0]
-                ),
+                x0-label_offset, y0, LATITUDE_FORMATTER(lat),
                 horizontalalignment = 'right',
                 verticalalignment='center',
                 **label_opts
@@ -64,11 +61,7 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
         x0 = np.interp(y0, y, x)
         if map_extent[0]<x0<map_extent[1]:
             ax.text(
-                x0, y0-label_offset,
-                '{:2d}$^\circ${}'.format(
-                    abs(lon),
-                    {True: 'E', False: 'W'}[lon>0]
-                ),
+                x0, y0-label_offset, LONGITUDE_FORMATTER(lon),
                 horizontalalignment = 'center',
                 verticalalignment='top',
                 **label_opts

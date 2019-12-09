@@ -5,13 +5,17 @@ import numpy as np
 
 def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
     """
-    Add graticules to cartopy GeoAxes and label them
+    Add graticules to cartopy GeoAxes and label them.
+
+    NB: This grid assumes that the grid has latitude and longitudes
+    arranged somewhat rectangularly. For circumpolar maps, see circumpolar_axis
+    further below.
 
     License
     -------
     GNU-GPLv3, (C) A. R.
     (https://github.com/poplarShift/python-data-science-utils)
-        """
+    """
     if label_opts is None:
         label_opts = {}
     if grid_opts is None:

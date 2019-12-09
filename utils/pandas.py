@@ -5,6 +5,23 @@ from shapely.geometry import Point
 import geopandas as gpd
 from fiona.crs import from_epsg
 
+def bin_series(s, bins):
+    """
+    Sort pandas series into bins, labelling them by each bin's midpoint.
+
+    Parameters
+    ----------
+    s: pandas Series
+    bins: bins argument to pd.cut
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+    """
+    labels = np.diff(bins)/2 + bins[:-1]
+    return pd.to_numeric(pd.cut(s, bins=bins, labels=labels))
+
 def date_range_with_fix(*args, fixed_date, **kwargs):
     """
     Force pandas' date_range function to contain a specific date
@@ -85,3 +102,17 @@ def df_to_gdf(df, lon='lon', lat='lat'):
     df['geometry'] = [Point(x, y) for x, y in zip(df[lon], df[lat])]
     df.crs = from_epsg(4326)
     return df
+
+def pandas_df_to_markdown_table(df):
+    """
+    Modeled on https://stackoverflow.com/a/33869154
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+    """
+    fmt = ['---' for i in range(len(df.columns))]
+    df_fmt = pd.DataFrame([fmt], columns=df.columns)
+    df_formatted = pd.concat([df_fmt, df])
+    return df_formatted.to_csv(sep="|", index=False)

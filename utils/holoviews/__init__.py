@@ -9,23 +9,6 @@ import pandas as pd
 import numpy as np
 import param
 
-### make faceted legends
-
-def get_kdim_legend(layout, kdim_opts, hw={'width':150, 'height': 250},
-                    defaults={'color': 'k', 'line_width':7, 'alpha':1, 'size':6}):
-    raise NotImplementedError('copy over from notebook')
-
-### Add datetime accessor to dim transforms:
-
-# some pandas source code to try and implement dt as accessor class on dim...
-# https://github.com/pandas-dev/pandas/blob/master/pandas/core/indexes/accessors.py
-# from pandas.core.arrays import DatetimeArray
-# from pandas.core.accessor import delegate_names
-#
-# @delegate_names(delegate=DatetimeArray,
-#                 accessors=DatetimeArray._datetimelike_ops,
-#                 typ="property")
-
 def _dt(self, attr='month'):
     def get_dt(x, attr):
         # allowed = [attr for attr in dir(a.dt) if not attr.startswith('_')]

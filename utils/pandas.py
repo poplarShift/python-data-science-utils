@@ -66,6 +66,7 @@ def with_df_as_numeric(func):
     """
     @functools.wraps(func)
     def wrapper(df, columns):
+        df = df.copy()
         # convert to numeric
         if isinstance(columns, str):
             columns = [columns]

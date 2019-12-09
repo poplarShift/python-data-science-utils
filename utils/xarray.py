@@ -2,36 +2,47 @@ import numpy as np
 import xarray as xr
 import pandas as pd
 
-def apply_1d(da, func, dim, **kwargs):
+def apply_1d(over_da, func, dim, **kwargs):
     """
     For those occasions where you'd think that ds.reduce() should do the trick,
     but you somehow don't have a function that already handles ndarrays.
 
     Parameters
     ----------
-    da : xarray DataArray
+    over_da : xarray DataArray or list thereof
     func : Function that can handle a 1-dimensional ndarray
     dim : Dimension over which to apply func
+
+    Usage
+    -----
+    e.g.: apply_1d(da, ols, dim='Depth', param='slope')
 
     License
     -------
     GNU-GPLv3, (C) A. Randelhoff
     (https://github.com/poplarShift/python-data-science-utils)
     """
-    da_dropped = da.isel({dim: 0}).drop(dim)
+    if not isinstance(over_da, list):
+        over_da = [over_da]
+
+    da_dropped = over_da[0].isel({dim: 0}).drop(dim)
     dims = da_dropped.coords.dims
 
     results = np.nan * da_dropped
     for idx, _ in np.ndenumerate(da_dropped):
         sel_dict = {c: i for c, i in zip(dims, idx)}
-        res = func(da[sel_dict], **kwargs)
+        res = func(
+            *(da[sel_dict] for da in over_da),
+            **kwargs
+        )
+        # print(res)
         results[sel_dict] = res
     return results
 
 def ols(da, param='slope'):
     """
     Apply statsmodel's OLS regression to a 1d DataArray.
-    Handles datetimes.
+    Handles datetimes (in that case, regression is against days).
 
     Parameters
     ----------
@@ -76,6 +87,12 @@ def ols(da, param='slope'):
         return res_fn[param](res)
     else:
         return np.nan
+
+
+# implement precision for uniqueness?
+# np.round(12.3456789, decimals=4)
+
+# np.unique(ds.longitude.isel(profile_id=0))[2]
 
 def get_unique(x, axis=0):
     """

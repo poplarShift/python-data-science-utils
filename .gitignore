@@ -4,6 +4,8 @@ __pycache__
 docs
 misc
 
-drafts.py
+misc.py
+scratch.py
+cache.py
 dev.ipynb
 .ipynb_checkpoints

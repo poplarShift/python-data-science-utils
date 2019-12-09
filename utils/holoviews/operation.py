@@ -1,8 +1,9 @@
 import holoviews as hv
-import param
 from holoviews.core.util import isdatetime
 import numpy as np
 import pandas as pd
+import param
+from scipy.stats import linregress
 
 class bin_average(hv.Operation):
     """
@@ -21,6 +22,10 @@ class bin_average(hv.Operation):
         # objects=[int, list],
         allow_None=True,
         doc='Bin edges.')
+
+    avg_fun = param.Callable(
+        default=np.nanmean, doc='Averaging function'
+    )
 
     def _process(self, element, key=None):
         x, y = (element.dimension_values(i) for i in range(2))
@@ -43,7 +48,7 @@ class bin_average(hv.Operation):
         y_avg, y16, y84 = (np.nan*np.zeros(len(x_avg)) for i in range(3))
         for k, ll, ul in zip(range(len(x_avg)), bins[:-1], bins[1:]):
             y_sel = y[(ll<x) & (x<=ul)]
-            y_avg[k] = np.nanmean(y_sel)
+            y_avg[k] = self.p.avg_fun(y_sel)
             y16[k] = np.nanquantile(y_sel, q=0.16)
             y84[k] = np.nanquantile(y_sel, q=0.84)
         errors = {x_dim.name: x_avg, y_dim.name: np.array(y_avg),
@@ -59,6 +64,16 @@ except:
 class lowess(hv.Operation):
     """
     Performs LOWESS smoothing.
+
+    Can pass following kwargs on to statsmodels.nonparametric.smoothers_lowess.lowess:
+    dict(
+        frac=0.6666666666666666,
+        it=3,
+        delta=0.0,
+        is_sorted=False,
+        missing='drop',
+        return_sorted=True,
+    )
 
     Reference:
         https://www.statsmodels.org/dev/generated/statsmodels.nonparametric.smoothers_lowess.lowess.html
@@ -105,16 +120,23 @@ class regression(hv.Operation):
     def _process(self, element, key=None):
         xp, yp = (element.dimension_values(i) for i in range(2))
         if len(xp):
-            if isinstance(xp[0], datetime_types):
+            if isdatetime(xp[0]):
                 xp = xp.astype(int)
                 is_dt = True
             else:
                 is_dt = False
-            inan = ~(np.isnan(xp) | np.isnan(xp))
-            xp, xp = xp[inan], xp[inan]
+            inan = np.isnan(xp) | np.isnan(yp)
+            xp, yp = xp[~inan], yp[~inan]
             if len(xp):
-                p = np.polyfit(x=xp, y=yp, deg=1)
-                y = p[0]*xp + p[1]
+                slope, intercept, r, p_value, _ = linregress(xp, yp)
+                y = slope*xp + intercept
+                # p = np.polyfit(x=xp, y=yp, deg=1)
+                # y = p[0]*xp + p[1]
                 if is_dt:
                     xp = xp.astype(np.datetime64)
-        return element.clone((xp, y), new_type=hv.Curve)
+            else:
+                slope = np.nan
+                y = np.nan*xp
+        return element.clone(
+            (xp, y, [slope]*len(xp)),
+            vdims=element.vdims+['Slope'], new_type=hv.Curve)

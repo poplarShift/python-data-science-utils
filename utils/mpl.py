@@ -2,6 +2,7 @@ import cartopy.crs as ccrs
 import matplotlib.ticker as mticker
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import numpy as np
+import matplotlib as mpl
 from matplotlib.transforms import Bbox
 from matplotlib.path import Path
 

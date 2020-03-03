@@ -119,7 +119,6 @@ def get_unique(x, axis=0):
     if not isinstance(u, np.ndarray):
         # if iteridx was empty tuple
         u = np.array(u)
-
     for i in np.ndindex(iteridx):
         u_1dim = np.unique(x_[i])
         nan_nat = pd.isnull(u_1dim)
@@ -132,5 +131,5 @@ def get_unique(x, axis=0):
             else:
                 u[i] = np.nan
         else:
-            raise ValueError('Non-unique slices encountered!')
+            raise ValueError(f'Non-unique slices encountered at {i}!')
     return u

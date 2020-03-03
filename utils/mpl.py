@@ -34,7 +34,8 @@ def align_xaxis_extents(anchor_ax, ax):
     y0, h = ax.get_position().bounds[1::2]
     ax.set_position(Bbox.from_bounds(x0, y0, w, h))
 
-def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
+def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
+                     label_offset=1e0, **kwargs):
     """
     Add graticules to cartopy GeoAxes and label them.
 
@@ -51,7 +52,6 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None, **kwargs):
         label_opts = {}
     if grid_opts is None:
         grid_opts = {}
-    label_offset = kwargs.pop('label_offset', 1e-4)
 
     proj = ax.projection
     gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False,

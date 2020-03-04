@@ -35,13 +35,18 @@ def align_xaxis_extents(anchor_ax, ax):
     ax.set_position(Bbox.from_bounds(x0, y0, w, h))
 
 def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
-                     label_offset=1e0, **kwargs):
+                     label_offset=1e0, label_along_fixed=None, **kwargs):
     """
     Add graticules to cartopy GeoAxes and label them.
 
     NB: This grid assumes that the grid has latitude and longitudes
     arranged somewhat rectangularly. For circumpolar maps, see circumpolar_axis
     further below.
+
+    Parameters
+    ----------
+    label_along_fixed: None to do rectangular labelling,
+        (lon, lat) tuple to label along fixed lat, lon
 
     License
     -------
@@ -61,20 +66,29 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
     gl.xlocator = mticker.FixedLocator(lons)
     gl.ylocator = mticker.FixedLocator(lats)
 
-    # W, E, S, N
+    # W, E, S, N / lbrt
     map_extent = ax.get_extent()
 
     # LATITUDE LABELS
-    x0,_ = ax.get_xlim()
     some_lons = np.arange(gl.xlocator.locs.min(), gl.xlocator.locs.max(), 1)
     for lat in gl.ylocator.locs:
-        # interpolate latitude circle to map boundary
-        xyz_projected = proj.transform_points(
-            ccrs.PlateCarree(), some_lons, lat*np.ones_like(some_lons)
-        )
-        x = xyz_projected[:, 0]
-        y = xyz_projected[:, 1]
-        y0 = np.interp(x0, x ,y)
+        if label_along_fixed is None:
+            # standard
+            x0,_ = ax.get_xlim()
+            # interpolate latitude circle to map boundary
+            xyz_projected = proj.transform_points(
+                ccrs.PlateCarree(), some_lons, lat*np.ones_like(some_lons)
+            )
+            x = xyz_projected[:, 0]
+            y = xyz_projected[:, 1]
+            y0 = np.interp(x0, x ,y)
+
+                        # #
+                        # boundary = LineString(map(tuple, ax.outline_patch.get_path().vertices))
+                        # lats = LineString([(x, y) for x, y, _ in map(tuple, xyz_projected)])
+        else:
+            x0, y0 = proj.transform_point(label_along_fixed[0], lat, ccrs.PlateCarree())
+
         if map_extent[2]<y0<map_extent[3]:
             ax.text(
                 x0-label_offset, y0, LATITUDE_FORMATTER(lat),
@@ -87,13 +101,17 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
     y0,_ = ax.get_ylim()
     some_lats = np.arange(gl.ylocator.locs.min(), gl.ylocator.locs.max(), 1)
     for lon in gl.xlocator.locs:
-        xyz_projected = proj.transform_points(
-            ccrs.PlateCarree(), lon*np.ones_like(some_lats), some_lats
-        )
-        x = xyz_projected[:, 0]
-        y = xyz_projected[:, 1]
+        if label_along_fixed is None:
+            xyz_projected = proj.transform_points(
+                ccrs.PlateCarree(), lon*np.ones_like(some_lats), some_lats
+            )
+            x = xyz_projected[:, 0]
+            y = xyz_projected[:, 1]
 
-        x0 = np.interp(y0, y, x)
+            x0 = np.interp(y0, y, x)
+        else:
+            x0, y0 = proj.transform_point(lon, label_along_fixed[1], ccrs.PlateCarree())
+
         if map_extent[0]<x0<map_extent[1]:
             ax.text(
                 x0, y0-label_offset, LONGITUDE_FORMATTER(lon),
@@ -138,3 +156,36 @@ def circumpolar_axis(ax):
 def squeeze_axis_upward(ax, newy=0.5):
     x, y, w, h = ax.get_position().bounds
     ax.set_position((x, newy, w, y+h-newy))
+
+from matplotlib.path import Path
+from shapely.geometry import LineString, LinearRing
+import geoviews as gv
+gv.extension('matplotlib')
+
+def latlon_curved_box_boundary(ax, proj, lbrt):
+
+    left, bottom, right, top = lbrt
+
+    corners = [
+        (left, bottom),
+        (left, top),
+        (right, top),
+        (right, bottom),
+        (left, bottom),
+    ]
+
+    ls = LineString(corners)
+    ls = LineString([ls.interpolate(r, normalized=True) for r in np.linspace(0, 1, 500)])
+    arr = proj.transform_points(ccrs.PlateCarree(), *map(np.array, ls.coords.xy))
+    path = Path([(x, y) for x, y, _ in map(tuple, arr)])
+
+    proj = ax.projection
+    ax.set_boundary(path, transform=proj)
+    # collections are only clipped when added after this point, so re-add them
+    for c in ax.collections:
+        c.remove()
+        ax.add_collection(c)
+
+    _ax = gv.render(gv.Shape(LinearRing(map(tuple, path.vertices)), crs=proj)).axes[0]
+    ax.set_xlim(*_ax.get_xlim())
+    ax.set_ylim(*_ax.get_ylim())

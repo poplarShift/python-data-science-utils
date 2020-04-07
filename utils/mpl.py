@@ -34,7 +34,8 @@ def align_xaxis_extents(anchor_ax, ax):
     y0, h = ax.get_position().bounds[1::2]
     ax.set_position(Bbox.from_bounds(x0, y0, w, h))
 
-def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
+def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
+                     label_opts=None, grid_opts=None,
                      label_offset=1e0, label_along_fixed=None, **kwargs):
     """
     Add graticules to cartopy GeoAxes and label them.
@@ -45,6 +46,7 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
 
     Parameters
     ----------
+    label_lons, label_lats: If not None, label only these.
     label_along_fixed: None to do rectangular labelling,
         (lon, lat) tuple to label along fixed lat, lon
 
@@ -69,11 +71,16 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
     # W, E, S, N / lbrt
     map_extent = ax.get_extent()
 
+    if label_lons is None:
+        label_lons = lons
+    if label_lats is None:
+        label_lats = lats
+
     # LATITUDE LABELS
     some_lons = np.arange(gl.xlocator.locs.min(), gl.xlocator.locs.max(), 1)
-    for lat in gl.ylocator.locs:
+    for lat in label_lats:
         if label_along_fixed is None:
-            # standard
+            # default
             x0,_ = ax.get_xlim()
             # interpolate latitude circle to map boundary
             xyz_projected = proj.transform_points(
@@ -100,7 +107,7 @@ def set_cartopy_grid(ax, lons, lats, label_opts=None, grid_opts=None,
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
     y0,_ = ax.get_ylim()
     some_lats = np.arange(gl.ylocator.locs.min(), gl.ylocator.locs.max(), 1)
-    for lon in gl.xlocator.locs:
+    for lon in label_lons:
         if label_along_fixed is None:
             xyz_projected = proj.transform_points(
                 ccrs.PlateCarree(), lon*np.ones_like(some_lats), some_lats

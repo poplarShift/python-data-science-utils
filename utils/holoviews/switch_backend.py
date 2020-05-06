@@ -107,7 +107,7 @@ bokeh2mpl = {
         ),
     },
     # multiple
-    'Scatter,Points,ErrorBars,Shape': {
+    'Scatter,Points,ErrorBars,Shape,Curve': {
         'size': 's',
         'color': 'c',
         'line_color': 'edgecolor',

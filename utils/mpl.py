@@ -167,9 +167,22 @@ def squeeze_axis_upward(ax, newy=0.5):
 from matplotlib.path import Path
 from shapely.geometry import LineString, LinearRing
 import geoviews as gv
-gv.extension('matplotlib')
 
 def latlon_curved_box_boundary(ax, proj, lbrt):
+    """
+    Clip the boundary of a map to one given by min/max lon/lat.
+
+    Arguments
+    ---------
+        ax: matplotlib axis
+        proj: cartopy CRS
+        lbrt: left, bottom, right, top boundary in lon/lat coordinates
+
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+    """
 
     left, bottom, right, top = lbrt
 
@@ -193,6 +206,11 @@ def latlon_curved_box_boundary(ax, proj, lbrt):
         c.remove()
         ax.add_collection(c)
 
-    _ax = gv.render(gv.Shape(LinearRing(map(tuple, path.vertices)), crs=proj)).axes[0]
+    _ax = gv.render(
+        gv.Shape(LinearRing(map(tuple, path.vertices)), crs=proj),
+        backend='matplotlib'
+    ).axes[0]
     ax.set_xlim(*_ax.get_xlim())
     ax.set_ylim(*_ax.get_ylim())
+
+    return ls

@@ -165,8 +165,7 @@ def squeeze_axis_upward(ax, newy=0.5):
     ax.set_position((x, newy, w, y+h-newy))
 
 from matplotlib.path import Path
-from shapely.geometry import LineString, LinearRing
-import geoviews as gv
+from shapely.geometry import LineString
 
 def latlon_curved_box_boundary(ax, proj, lbrt):
     """
@@ -206,11 +205,11 @@ def latlon_curved_box_boundary(ax, proj, lbrt):
         c.remove()
         ax.add_collection(c)
 
-    _ax = gv.render(
-        gv.Shape(LinearRing(map(tuple, path.vertices)), crs=proj),
-        backend='matplotlib'
-    ).axes[0]
+    _fig = mpl.figure.Figure()
+    _ax = _fig.add_axes([.1,.1,.8,.8], projection=proj)
+    _ax.add_patch(mpl.patches.PathPatch(path))
     ax.set_xlim(*_ax.get_xlim())
     ax.set_ylim(*_ax.get_ylim())
+
 
     return ls

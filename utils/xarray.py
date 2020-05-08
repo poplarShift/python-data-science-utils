@@ -112,22 +112,33 @@ def get_unique(x, axis=0):
     GNU-GPLv3, (C) A. Randelhoff
     (https://github.com/poplarShift/python-data-science-utils)
     """
+    is_obj = x.dtype.char == 'O'
     is_dt = np.issubdtype(x.dtype, np.datetime64)
     x_ = np.moveaxis(x, source=axis, destination=-1)
     iteridx = x_.shape[:-1]
-    u = np.zeros(iteridx, dtype=x.dtype) if is_dt else np.nan*np.zeros(iteridx)
+    if is_dt:
+        u = np.zeros(iteridx, dtype=x.dtype)
+    elif is_obj:
+        u = np.zeros(iteridx, dtype=x.dtype)
+    else: # numeric
+        u = np.nan*np.zeros(iteridx)
+
     if not isinstance(u, np.ndarray):
         # if iteridx was empty tuple
         u = np.array(u)
+
+    isnull = lambda x: pd.isnull(x) | (x == '')
+
     for i in np.ndindex(iteridx):
         u_1dim = np.unique(x_[i])
-        nan_nat = pd.isnull(u_1dim)
-        u_non_null = u_1dim[~nan_nat]
+        u_non_null = u_1dim[~isnull(u_1dim)]
         if len(u_non_null)==1:
             u[i] = u_non_null[0]
-        elif pd.isnull(u_1dim[0]):
+        elif isnull(u_1dim[0]):
             if is_dt:
                 u[i] = np.datetime64('NaT')
+            elif is_obj:
+                u[i] = ''
             else:
                 u[i] = np.nan
         else:

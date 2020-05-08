@@ -21,7 +21,3 @@ Modules:
 - [matlab](utils/matlab.py)
 
   Reading in .mat files I occasionally get from those collaborators who still use matlab
-
-- [Standard Imports](utils/standard_imports.py)
-
-  `from utils.standard_imports import *`. A bunch of earth/data science standard imports, suppressing possible `ImportError`s. This is to avoid boilerplate code when quickly checking something in a new project and not meant to replace a serious preamble in the long run.

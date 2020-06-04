@@ -1,6 +1,58 @@
 import numpy as np
 import xarray as xr
 import pandas as pd
+from functools import reduce
+
+from .cartopy import transform_points
+
+def transform_dataset(ds, coords, from_crs, to_crs):
+    """
+    Transform coordinates of a Dataset or DataArray.
+
+    Output can be directly assigned into a dataset.
+
+    Arguments
+    ---------
+        ds: xarray dataset
+        coords: iterable of dimension, coordinates, or data variable names
+            that hold the coordinates to be transformed
+        from_crs, to_crs: cartopy CRS instances
+    """
+    x = ds[coords[0]]
+    y = ds[coords[1]]
+
+    x, y = xr.broadcast(x, y) # coerce to at least 2D
+    dims = x.dims
+
+    xp, yp = transform_points(from_crs, to_crs, x.values, y.values)
+
+    return ((dims, xp), (dims, yp))
+
+def crop(ds, **constraints):
+    """
+    Crop an xarray dataset.
+
+    Discards all coordinates where a given coordinate or data variable is outside
+    the bounds given by the respective tuple.
+
+    Arguments
+    ---------
+        ds: Dataset
+        constraints: dict, where keys are the name of a coordinate or data_var,
+            and values are tuples that will bound that coordinate or data_var.
+    """
+    ds = ds.set_coords(list(constraints))
+    # set nan
+    for var, (varmin, varmax) in constraints.items():
+        ds = ds.where((ds[var]>varmin) & (ds[var]<varmax))
+    # crop array
+    for dim in ds.dims:
+        other_dims = [d for d in ds.dims if d != dim]
+        all_nans = [ds[var].isnull().all(other_dims) for var in ds.data_vars]
+        all_nan = reduce(lambda x, y: x&y, all_nans)
+        ds = ds.isel({dim: ~all_nan})
+
+    return ds
 
 def apply_1d(over_da, func, dim, **kwargs):
     """
@@ -35,7 +87,6 @@ def apply_1d(over_da, func, dim, **kwargs):
             *(da[sel_dict] for da in over_da),
             **kwargs
         )
-        # print(res)
         results[sel_dict] = res
     return results
 

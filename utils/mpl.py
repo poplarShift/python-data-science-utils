@@ -207,7 +207,7 @@ def latlon_curved_box_boundary(ax, proj, lbrt):
 
     _fig = mpl.figure.Figure()
     _ax = _fig.add_axes([.1,.1,.8,.8], projection=proj)
-    _ax.add_patch(mpl.patches.PathPatch(path))
+    _ax.plot(arr[:, 0], arr[:, 1])
     ax.set_xlim(*_ax.get_xlim())
     ax.set_ylim(*_ax.get_ylim())
 

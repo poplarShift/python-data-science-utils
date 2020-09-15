@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 def get_git_version():
     """
@@ -13,7 +13,7 @@ setup(name='utils',
       version=get_git_version(),
       description='Utils',
       author='Achim Randelhoff',
-      packages=['utils',],
+      packages=find_packages(),
       install_requires=[
       ],
      )

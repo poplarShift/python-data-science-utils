@@ -90,6 +90,25 @@ def apply_1d(over_da, func, dim, **kwargs):
         results[sel_dict] = res
     return results
 
+
+def critical_index_value(vals, crit_val, dim, smaller_than):
+    """
+    Find the first value of an index (`dim`: str) where some value (`vals`: xr.DataArray) becomes
+    larger or smaller (`smaller_than`: bool) than `crit_val` (float).
+
+    Example
+    -----
+        To find Zeu, where iPAR drops below 1% of surface iPAR0-:
+        ds['Zeu'] = critical_index_value(ds['iPAR']/ds['iPAR0minus'], 0.01, 'Depth', True)
+    """
+    if smaller_than:
+        criterion = vals<crit_val
+    else:
+        criterion = vals>crit_val
+    idx = criterion.reduce(np.argmax, dim=dim) #True>False
+    return xr.where(idx>0, vals[dim].isel(**{dim:idx}), np.nan)
+    
+
 def ols(da, param='slope'):
     """
     Apply statsmodel's OLS regression to a 1d DataArray.

@@ -5,6 +5,34 @@ from shapely.geometry import Point
 import geopandas as gpd
 from fiona.crs import from_epsg
 
+def decimal_day_of_year(times, wrap=True):
+    """
+    Convert pandas datetime series into decimal days of the year.
+
+    Notes
+    -----
+        January 1 at noon corresponds to ddoy=0.5.
+
+        wrap=True calculates day of the year for each year separately.
+        wrap=False counts days from the earliest date in the series. Pay attention to
+        leap years if you do so.
+    """
+    datatype = type(times)
+
+    if wrap:
+        ddoys = []
+        for year in times.dt.year.unique():
+            times_this_year = [t for t in times if t.year == year]
+            ddoys += list(decimal_day_of_year(datatype(times_this_year), wrap=False))
+        ddoys = datatype(ddoys)
+    else:
+        # First day of the earliest year in time series.
+        epoch = pd.Timestamp(year=times.min().year, month=1, day=1)
+        ddoys = (times - epoch)/pd.Timedelta(days=1)
+
+    return ddoys
+
+
 def bin_series(s, bins):
     """
     Sort pandas series into bins, labelling them by each bin's midpoint.

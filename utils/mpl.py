@@ -96,17 +96,31 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
         else:
             x0, y0 = proj.transform_point(label_along_fixed[0], lat, ccrs.PlateCarree())
 
+        lat_label_opts = {
+            **dict(
+                horizontalalignment='right',
+                verticalalignment='center',
+            ),
+            **label_opts
+        }
+
         if map_extent[2]<y0<map_extent[3]:
             ax.text(
                 x0-label_offset, y0, LATITUDE_FORMATTER(lat),
-                horizontalalignment = 'right',
-                verticalalignment='center',
-                **label_opts
+                **lat_label_opts
             )
 
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
     y0,_ = ax.get_ylim()
     some_lats = np.arange(gl.ylocator.locs.min(), gl.ylocator.locs.max(), 1)
+
+    lon_label_opts = {
+        **dict(
+            horizontalalignment='center',
+            verticalalignment='top',
+        ),
+        **label_opts
+    }
     for lon in label_lons:
         if label_along_fixed is None:
             xyz_projected = proj.transform_points(
@@ -122,9 +136,7 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
         if map_extent[0]<x0<map_extent[1]:
             ax.text(
                 x0, y0-label_offset, LONGITUDE_FORMATTER(lon),
-                horizontalalignment = 'center',
-                verticalalignment='top',
-                **label_opts
+                **lon_label_opts
             )
 
 

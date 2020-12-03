@@ -1,7 +1,6 @@
 from scipy.spatial import cKDTree
 import numpy as np
 from shapely.geometry import Point, Polygon
-from geopandas import GeoDataFrame
 
 # need to sort out geometry vs. attr vs dict entry/column,
 # and dataset vs dataframe!!

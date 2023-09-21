@@ -1,3 +1,4 @@
+from typing import List
 from scipy.spatial import cKDTree
 import numpy as np
 from shapely.geometry import Point, Polygon
@@ -114,3 +115,37 @@ def smoothen(g):
 
     newcoords = [(x,y) for x, y in zip(*newcoords)]
     return Polygon(newcoords)
+
+
+def find_nearest_lonlat(lon0: float, lat0: float, lons: List[float], lats: List[float]):
+    """Find the point nearest to (lon0, lat0) among the points list(zip(lons, lats)).
+
+    Automatically chooses appropriate UTM zone for coordinate transformations.
+
+    Returns:
+        nearest lon
+        nearest lat
+        distance to nearest
+        index in lists `lons` and `lats`
+        
+    License
+    -------
+    GNU-GPLv3, (C) A. R.
+    (https://github.com/poplarShift/python-data-science-utils)
+    """
+    from cartopy.crs import UTM, PlateCarree
+    import utm
+    from scipy.spatial import KDTree
+    import numpy as np
+
+    _, _, zone, letter = utm.from_latlon(latitude=lat0, longitude=lon0)
+    crs = UTM(zone)
+    x, y = crs.transform_point(lon0, lat0, PlateCarree())
+    xyz = crs.transform_points(PlateCarree(), np.array(lons), np.array(lats))
+    pts = xyz[:, :2]
+
+    tree = KDTree(pts)
+    dist, idx = tree.query((x, y))
+    lon = lons[idx]
+    lat = lats[idx]
+    return lon, lat, dist, idx

@@ -1,7 +1,6 @@
 from typing import List
 from scipy.spatial import cKDTree
 import numpy as np
-from shapely.geometry import Point, Polygon
 
 # need to sort out geometry vs. attr vs dict entry/column,
 # and dataset vs dataframe!!
@@ -97,9 +96,9 @@ def nearest_with_time_constraint(d1, d2, x, y, dist_tol=.1, t='date', t_tol=1):
     return nearest, within_tol
 
 
-def smoothen(g):
+def smoothen(coords):
     """
-    Insert new points along Polygon boundary.
+    Insert new points along path defined by coords [(x0, y0), (x1, y1), ...].
 
     License
     -------
@@ -107,14 +106,14 @@ def smoothen(g):
     (https://github.com/poplarShift/python-data-science-utils)
     """
     newcoords = []
-    for c in g.exterior.coords.xy:
+    for c in zip(*coords): # iterate over each x, y, z, ... separately
         newc = []
         for c1, c2 in zip(c[:-1], c[1:]):
             newc += list(np.linspace(c1, c2, 50)[:-1])
         newcoords.append(newc)
 
     newcoords = [(x,y) for x, y in zip(*newcoords)]
-    return Polygon(newcoords)
+    return newcoords
 
 
 def find_nearest_lonlat(lon0: float, lat0: float, lons: List[float], lats: List[float]):

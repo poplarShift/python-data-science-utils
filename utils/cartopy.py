@@ -1,4 +1,6 @@
 import numpy as np
+import cartopy.crs as ccrs
+from utils.geometry import smoothen
 
 
 def transform_points(from_crs, to_crs, x, y):
@@ -7,6 +9,37 @@ def transform_points(from_crs, to_crs, x, y):
     """
     xy_new = to_crs.transform_points(from_crs, x, y)
     return xy_new[..., 0], xy_new[..., 1]
+
+
+def transform_bbox(from_crs, to_crs, bbox):
+    """
+    Transform a bounding box from one cartopy CRS to another.
+    bbox is given and returned as (left, bottom, right, top) tuple.
+    """
+    l, b, r, t = bbox
+    bbox_pts = [
+            (l, b),
+            (r, b),
+            (r, t),
+            (l, t),
+        ]
+
+    # make sure that new bounding box covers area even when boundaries
+    # are tilted/curved with respect to the original projection
+    bbox_smoothed = np.array(smoothen(bbox_pts))
+
+    x_transf, y_transf = transform_points(
+        from_crs, to_crs, bbox_smoothed[:, 0], bbox_smoothed[:, 1]
+    )
+
+    l_transf, r_transf, b_transf, t_transf = (
+        np.min(x_transf),
+        np.max(x_transf),
+        np.min(y_transf),
+        np.max(y_transf),
+    )
+    return l_transf, b_transf, r_transf, t_transf
+
 
 def calculate_deviation(proj, compass, x, y, xy_units, eps_ll=1e-9):
     """

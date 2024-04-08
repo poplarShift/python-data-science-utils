@@ -57,6 +57,11 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
     """
     if label_opts is None:
         label_opts = {}
+    if "horizontalalignment" not in label_opts:
+        label_opts["horizontalalignment"] = "right"
+    if "verticalalignment" not in label_opts:
+        label_opts["verticalalignment"] = "center"
+
     if grid_opts is None:
         grid_opts = {}
 
@@ -96,13 +101,8 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
         else:
             x0, y0 = proj.transform_point(label_along_fixed[0], lat, ccrs.PlateCarree())
 
-        if map_extent[2]<y0<map_extent[3]:
-            ax.text(
-                x0-label_offset, y0, LATITUDE_FORMATTER(lat),
-                horizontalalignment = 'right',
-                verticalalignment='center',
-                **label_opts
-            )
+        if map_extent[2] < y0 < map_extent[3]:
+            ax.text(x0 - label_offset, y0, LATITUDE_FORMATTER(lat), **label_opts)
 
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
     y0,_ = ax.get_ylim()
@@ -119,14 +119,8 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
         else:
             x0, y0 = proj.transform_point(lon, label_along_fixed[1], ccrs.PlateCarree())
 
-        if map_extent[0]<x0<map_extent[1]:
-            ax.text(
-                x0, y0-label_offset, LONGITUDE_FORMATTER(lon),
-                horizontalalignment = 'center',
-                verticalalignment='top',
-                **label_opts
-            )
-
+        if map_extent[0] < x0 < map_extent[1]:
+            ax.text(x0, y0 - label_offset, LONGITUDE_FORMATTER(lon), **label_opts)
 
 def circumpolar_axis(ax):
     """

@@ -6,7 +6,8 @@ import matplotlib as mpl
 from matplotlib.transforms import Bbox
 from matplotlib.path import Path
 
-def cmap_to_list(cm, N=None, out='rgba'):
+
+def cmap_to_list(cm, N=None, out="rgba"):
     """
     Turns a MPL colour map into a list of colors.
 
@@ -22,21 +23,32 @@ def cmap_to_list(cm, N=None, out='rgba'):
     """
     if N is None:
         N = cm.N
-    if out == 'rgba':
+    if out == "rgba":
         cm2clr = lambda i: cm(i)
-    elif out == 'hex':
+    elif out == "hex":
         cm2clr = lambda i: mpl.colors.to_hex(cm(i))
 
     return [cm2clr(i) for i in np.linspace(0, 1, N)]
+
 
 def align_xaxis_extents(anchor_ax, ax):
     x0, w = anchor_ax.get_position().bounds[::2]
     y0, h = ax.get_position().bounds[1::2]
     ax.set_position(Bbox.from_bounds(x0, y0, w, h))
 
-def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
-                     label_opts=None, grid_opts=None,
-                     label_offset=1e0, label_along_fixed=None, **kwargs):
+
+def set_cartopy_grid(
+    ax,
+    lons,
+    lats,
+    label_lons=None,
+    label_lats=None,
+    label_opts=None,
+    grid_opts=None,
+    label_offset=1e0,
+    label_along_fixed=None,
+    **kwargs
+):
     """
     Add graticules to cartopy GeoAxes and label them.
 
@@ -66,9 +78,15 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
         grid_opts = {}
 
     proj = ax.projection
-    gl = ax.gridlines(crs=ccrs.PlateCarree(), draw_labels=False,
-                      linewidth=1, color='gray', alpha=0.5, linestyle='--',
-                      **grid_opts)
+    gl = ax.gridlines(
+        crs=ccrs.PlateCarree(),
+        draw_labels=False,
+        linewidth=1,
+        color="gray",
+        alpha=0.5,
+        linestyle="--",
+        **grid_opts
+    )
 
     gl.xlocator = mticker.FixedLocator(lons)
     gl.ylocator = mticker.FixedLocator(lats)
@@ -86,18 +104,18 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
     for lat in label_lats:
         if label_along_fixed is None:
             # default
-            x0,_ = ax.get_xlim()
+            x0, _ = ax.get_xlim()
             # interpolate latitude circle to map boundary
             xyz_projected = proj.transform_points(
-                ccrs.PlateCarree(), some_lons, lat*np.ones_like(some_lons)
+                ccrs.PlateCarree(), some_lons, lat * np.ones_like(some_lons)
             )
             x = xyz_projected[:, 0]
             y = xyz_projected[:, 1]
-            y0 = np.interp(x0, x ,y)
+            y0 = np.interp(x0, x, y)
 
-                        # #
-                        # boundary = LineString(map(tuple, ax.outline_patch.get_path().vertices))
-                        # lats = LineString([(x, y) for x, y, _ in map(tuple, xyz_projected)])
+            # #
+            # boundary = LineString(map(tuple, ax.outline_patch.get_path().vertices))
+            # lats = LineString([(x, y) for x, y, _ in map(tuple, xyz_projected)])
         else:
             x0, y0 = proj.transform_point(label_along_fixed[0], lat, ccrs.PlateCarree())
 
@@ -105,12 +123,12 @@ def set_cartopy_grid(ax, lons, lats, label_lons=None, label_lats=None,
             ax.text(x0 - label_offset, y0, LATITUDE_FORMATTER(lat), **label_opts)
 
     # LONGITUDE LABELS / COMPLETELY ANALOGOUS TO ABOVE
-    y0,_ = ax.get_ylim()
+    y0, _ = ax.get_ylim()
     some_lats = np.arange(gl.ylocator.locs.min(), gl.ylocator.locs.max(), 1)
     for lon in label_lons:
         if label_along_fixed is None:
             xyz_projected = proj.transform_points(
-                ccrs.PlateCarree(), lon*np.ones_like(some_lats), some_lats
+                ccrs.PlateCarree(), lon * np.ones_like(some_lats), some_lats
             )
             x = xyz_projected[:, 0]
             y = xyz_projected[:, 1]
@@ -140,26 +158,29 @@ def circumpolar_axis(ax):
         ax.add_collection(c)
 
     lat = 62
+
     def rotation(lon):
-        if abs(lon)<=90:
+        if abs(lon) <= 90:
             return lon
         else:
-            return lon-180
+            return lon - 180
 
     for lon in np.arange(-180, 180, 60):
-        lon_text = '{:3d}$^\circ${}'.format(
-                        abs(lon),
-                        {True: 'E', False: 'W'}[lon>=0]
-                    )
-        textopts = dict(va='center', ha='center', rotation=rotation(lon))
-        ax.text(*proj.transform_point(lon, lat, ccrs.PlateCarree()), lon_text, **textopts)
+        lon_text = "{:3d}$^\circ${}".format(abs(lon), {True: "E", False: "W"}[lon >= 0])
+        textopts = dict(va="center", ha="center", rotation=rotation(lon))
+        ax.text(
+            *proj.transform_point(lon, lat, ccrs.PlateCarree()), lon_text, **textopts
+        )
+
 
 def squeeze_axis_upward(ax, newy=0.5):
     x, y, w, h = ax.get_position().bounds
-    ax.set_position((x, newy, w, y+h-newy))
+    ax.set_position((x, newy, w, y + h - newy))
+
 
 from matplotlib.path import Path
 from shapely.geometry import LineString
+
 
 def latlon_curved_box_boundary(ax, proj, lbrt):
     """
@@ -188,7 +209,9 @@ def latlon_curved_box_boundary(ax, proj, lbrt):
     ]
 
     ls = LineString(corners)
-    ls = LineString([ls.interpolate(r, normalized=True) for r in np.linspace(0, 1, 500)])
+    ls = LineString(
+        [ls.interpolate(r, normalized=True) for r in np.linspace(0, 1, 500)]
+    )
     arr = proj.transform_points(ccrs.PlateCarree(), *map(np.array, ls.coords.xy))
     path = Path([(x, y) for x, y, _ in map(tuple, arr)])
 
@@ -200,10 +223,9 @@ def latlon_curved_box_boundary(ax, proj, lbrt):
         ax.add_collection(c)
 
     _fig = mpl.figure.Figure()
-    _ax = _fig.add_axes([.1,.1,.8,.8], projection=proj)
+    _ax = _fig.add_axes([0.1, 0.1, 0.8, 0.8], projection=proj)
     _ax.plot(arr[:, 0], arr[:, 1])
     ax.set_xlim(*_ax.get_xlim())
     ax.set_ylim(*_ax.get_ylim())
-
 
     return ls
